@@ -135,7 +135,10 @@ public abstract class LocationCollector
         {
             // Register the listener with the Location Manager to receive location updates
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
-            updateGPSlocation(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
+            Location initialLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            if (initialLocation != null) {
+                updateGPSlocation(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
+            }
         }
     }
 
