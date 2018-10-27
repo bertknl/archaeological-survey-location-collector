@@ -1,6 +1,10 @@
 package edu.upenn.sas.archaeologyapp.ui;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -9,11 +13,17 @@ import android.widget.Toast;
 import com.android.volley.RequestQueue;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.Volley;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
+
 import edu.upenn.sas.archaeologyapp.R;
 import edu.upenn.sas.archaeologyapp.models.PathElement;
 import edu.upenn.sas.archaeologyapp.models.StringObjectResponseWrapper;
@@ -107,6 +117,17 @@ public class SyncActivity extends AppCompatActivity
             String locationTimestamp = Double.toString(find.getCreatedTimestamp());
             String comments = find.getComments();
             String encoding = "";
+            List<String> imagePaths = find.getImagePaths();
+            List<String> imageNames = parseImageNames(imagePaths);
+            List<String> imageBase64 = encodeImages(imagePaths);
+            StringObjectResponseWrapper imageResponseWrapper = getImageResponseWrapper();
+            for (int i = 0; i < imageNames.size(); i++) {
+                makeVolleyStringObjectRequest(globalWebServerURL + "/insert_find_image?zone=" + zone
+                                + "&hemisphere=" + hemisphere + "&easting=" + easting + "&northing=" + northing
+                                + "&find=" + sample + "&imageName=" + imageNames.get(i) + "&imageBase64=" + imageBase64.get(i),
+                        queue, imageResponseWrapper);
+            }
+
             try
             {
                 encoding = URLEncoder.encode(comments, "UTF-8");
@@ -273,5 +294,66 @@ public class SyncActivity extends AppCompatActivity
         {
             Toast.makeText(SyncActivity.this, "Done syncing paths", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private List<String> parseImageNames(List<String> imagePaths) {
+        List<String> imageNames = new ArrayList<>();
+        for (String imagePath: imagePaths) {
+            Log.d("parseparse++", imagePath);
+            String[] parsedResult = imagePath.split("/");
+            imageNames.add(parsedResult[parsedResult.length - 1]);  //name is the last one
+        }
+        return imageNames;
+    }
+
+    private List<String> encodeImages(List<String> imagePaths) {
+        List<String> encodedImages = new ArrayList<>();
+        for (String imagePath: imagePaths) {
+                Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
+                encodedImages.add(imageToString(bitmap));
+        }
+        return encodedImages;
+    }
+
+    private String imageToString(Bitmap bitmap) {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, output);
+        byte[] imgBytes = output.toByteArray();
+        return android.util.Base64.encodeToString(imgBytes, android.util.Base64.DEFAULT);
+    }
+
+    private StringObjectResponseWrapper getImageResponseWrapper() {
+        return new StringObjectResponseWrapper() {
+            /**
+             * Response received
+             * @param response - database response
+             */
+            @Override
+            public void responseMethod(String response)
+            {
+                Log.v("Sync", response);
+                if (!response.contains("Error"))
+                {
+                   Log.d("image uploaded", response);
+                }
+                else
+                {
+                    Toast.makeText(getApplicationContext(), "Upload failed: " + response,
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            /**
+             * Connection failed
+             * @param error - failure
+             */
+            @Override
+            public void errorMethod(VolleyError error)
+            {
+                Toast.makeText(getApplicationContext(), "Upload image failed (Communication error): " + error,
+                        Toast.LENGTH_SHORT).show();
+                error.printStackTrace();
+            }
+        };
     }
 }

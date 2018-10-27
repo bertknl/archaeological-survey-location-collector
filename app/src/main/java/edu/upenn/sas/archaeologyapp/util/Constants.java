@@ -24,6 +24,6 @@ public class Constants
     public static final String PARAM_KEY_END_AR_RATIO = "end_AR_ratio", DEFAULT_REACH_HOST = "192.168.43.162";
     public static final int DEFAULT_POSITION_UPDATE_INTERVAL = 2, DEFAULT_VOLLEY_TIMEOUT = 15000;
     public static final String DEFAULT_REACH_PORT = "9001";
-    private static final String DEFAULT_WEB_SERVER_URL = "https://object-data-collector-service.herokuapp.com";
+    private static final String DEFAULT_WEB_SERVER_URL = "http://40.117.209.97";
     public static String globalWebServerURL = DEFAULT_WEB_SERVER_URL;
 }
