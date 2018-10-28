@@ -234,8 +234,8 @@ public class SyncActivity extends AppCompatActivity
                         Map<String, String> params = new HashMap<>();
                         params.put("zone", zone);
                         params.put("hemisphere", hemisphere);
-                        params.put("easting", easting);
-                        params.put("northing", northing);
+                        params.put("contextEasting", contextEasting);
+                        params.put("contextNorthing", contextNorthing);
                         params.put("find", sample);
                         params.put("imageName", currentName);
                         params.put("imageBase64", currentImageBase64);
