@@ -126,7 +126,7 @@ public class SyncActivity extends AppCompatActivity
             List<String> imagePaths = find.getImagePaths();
             List<String> imageNames = parseImageNames(imagePaths);
             List<String> imageBase64 = encodeImages(imagePaths);
-            StringObjectResponseWrapper imageResponseWrapper = getImageResponseWrapper();
+
             try
             {
                 encoding = URLEncoder.encode(comments, "UTF-8");
@@ -355,38 +355,4 @@ public class SyncActivity extends AppCompatActivity
         return android.util.Base64.encodeToString(imgBytes, android.util.Base64.NO_WRAP);
     }
 
-    private StringObjectResponseWrapper getImageResponseWrapper() {
-        return new StringObjectResponseWrapper() {
-            /**
-             * Response received
-             * @param response - database response
-             */
-            @Override
-            public void responseMethod(String response)
-            {
-                Log.v("Sync", response);
-                if (!response.contains("Error"))
-                {
-                   Log.d("image uploaded", response);
-                }
-                else
-                {
-                    Toast.makeText(getApplicationContext(), "Upload failed: " + response,
-                            Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            /**
-             * Connection failed
-             * @param error - failure
-             */
-            @Override
-            public void errorMethod(VolleyError error)
-            {
-                Toast.makeText(getApplicationContext(), "Upload image failed (Communication error): " + error,
-                        Toast.LENGTH_SHORT).show();
-                error.printStackTrace();
-            }
-        };
-    }
 }
