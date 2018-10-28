@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -45,6 +46,7 @@ public class SyncActivity extends AppCompatActivity
 {
     // The button the user clicks to initiate the sync process
     Button syncButton;
+    ProgressBar progressBar;
     private HashMap<String, Integer> imageNumbers = new HashMap<>();
     // A list of records populated from the local database, that need to be uploaded onto the server
     ArrayList<DataEntryElement> elementsToUpload;
@@ -74,6 +76,7 @@ public class SyncActivity extends AppCompatActivity
         uploadIndex = 0;
         totalPaths = pathsToUpload.size();
         pathUploadIndex = 0;
+        progressBar = findViewById(R.id.progress);
         // Attach a click listener to the sync button, and trigger the sync process on click of the button
         syncButton = findViewById(R.id.sync_button_sync_activity);
         syncButton.setOnClickListener(new View.OnClickListener() {
@@ -189,6 +192,49 @@ public class SyncActivity extends AppCompatActivity
                     }
                     // Upload the next find
                     uploadIndex++;
+                    //then send images
+                    for (int i = 0; i < imageNames.size(); i++) {
+                        //imageNames.get(i) and imageBase64.get(i)
+                        String currentName = imageNames.get(i);
+                        String currentImageBase64 = imageBase64.get(i);
+                        String currentIndex = String.valueOf(i + 1);
+                        StringRequest stringRequest = new StringRequest(Request.Method.POST, globalWebServerURL + "/insert_find_image",
+                                new Response.Listener<String>() {
+                                    @Override
+                                    public void onResponse(String response) {
+                                        Log.d("Res++", response);
+                                        if (!response.contains("Error")) {
+                                            //count image success
+                                        } else {
+                                            Toast.makeText(getApplicationContext(), "Upload failed: " + response,
+                                                    Toast.LENGTH_SHORT).show();
+                                        }
+                                    }
+                                }, new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+
+                            }
+                        })
+                        {
+                            @Override
+                            protected Map<String, String> getParams() throws AuthFailureError {
+                                Map<String, String> params = new HashMap<>();
+                                params.put("zone", zone);
+                                params.put("hemisphere", hemisphere);
+                                params.put("contextEasting", contextEasting);
+                                params.put("contextNorthing", contextNorthing);
+                                params.put("find", sample);
+                                params.put("imageName", currentName);
+                                params.put("imageBase64", currentImageBase64);
+                                params.put("indexNum", currentIndex);
+                                Log.d("cool", String.valueOf(currentImageBase64.length()));
+                                return params;
+                            }
+                        }; //end of defining current POST request
+                        queue.add(stringRequest);
+                    }//end of for loop
+                    progressBar.setProgress( (int) ((double)(uploadIndex)/(totalItems) * 100));
                     uploadFinds();
                 }
 
@@ -204,48 +250,7 @@ public class SyncActivity extends AppCompatActivity
                     error.printStackTrace();
                 }
             });
-            //then send images
-            for (int i = 0; i < imageNames.size(); i++) {
-                //imageNames.get(i) and imageBase64.get(i)
-                String currentName = imageNames.get(i);
-                String currentImageBase64 = imageBase64.get(i);
-                String currentIndex = String.valueOf(i + 1);
-                StringRequest stringRequest = new StringRequest(Request.Method.POST, globalWebServerURL + "/insert_find_image",
-                        new Response.Listener<String>() {
-                            @Override
-                            public void onResponse(String response) {
-                                Log.d("Res++", response);
-                                if (!response.contains("Error")) {
-                                    //count image success
-                                } else {
-                                    Toast.makeText(getApplicationContext(), "Upload failed: " + response,
-                                            Toast.LENGTH_SHORT).show();
-                                }
-                            }
-                        }, new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
 
-                    }
-                })
-                {
-                    @Override
-                    protected Map<String, String> getParams() throws AuthFailureError {
-                        Map<String, String> params = new HashMap<>();
-                        params.put("zone", zone);
-                        params.put("hemisphere", hemisphere);
-                        params.put("contextEasting", contextEasting);
-                        params.put("contextNorthing", contextNorthing);
-                        params.put("find", sample);
-                        params.put("imageName", currentName);
-                        params.put("imageBase64", currentImageBase64);
-                        params.put("indexNum", currentIndex);
-                        Log.d("cool", String.valueOf(currentImageBase64.length()));
-                        return params;
-                    }
-                }; //end of defining current POST request
-                queue.add(stringRequest);
-            }//end of for loop
         }
         else
         {
