@@ -10,8 +10,13 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
+
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
 import com.android.volley.RequestQueue;
+import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
 import java.io.ByteArrayOutputStream;
@@ -23,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import edu.upenn.sas.archaeologyapp.R;
 import edu.upenn.sas.archaeologyapp.models.PathElement;
@@ -121,13 +127,6 @@ public class SyncActivity extends AppCompatActivity
             List<String> imageNames = parseImageNames(imagePaths);
             List<String> imageBase64 = encodeImages(imagePaths);
             StringObjectResponseWrapper imageResponseWrapper = getImageResponseWrapper();
-            for (int i = 0; i < imageNames.size(); i++) {
-                makeVolleyStringObjectRequest(globalWebServerURL + "/insert_find_image?zone=" + zone
-                                + "&hemisphere=" + hemisphere + "&easting=" + easting + "&northing=" + northing
-                                + "&find=" + sample + "&imageName=" + imageNames.get(i) + "&imageBase64=" + imageBase64.get(i),
-                        queue, imageResponseWrapper);
-            }
-
             try
             {
                 encoding = URLEncoder.encode(comments, "UTF-8");
@@ -205,6 +204,40 @@ public class SyncActivity extends AppCompatActivity
                     error.printStackTrace();
                 }
             });
+            //then send images
+            for (int i = 0; i < imageNames.size(); i++) {
+                //imageNames.get(i) and imageBase64.get(i)
+                String currentName = imageNames.get(i);
+                String currentImageBase64 = imageBase64.get(i);
+                StringRequest stringRequest = new StringRequest(Request.Method.POST, globalWebServerURL + "/insert_find_image",
+                        new Response.Listener<String>() {
+                            @Override
+                            public void onResponse(String response) {
+                                Log.d("Res++", response);
+                            }
+                        }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+
+                    }
+                })
+                {
+                    @Override
+                    protected Map<String, String> getParams() throws AuthFailureError {
+                        Map<String, String> params = new HashMap<>();
+                        params.put("zone", zone);
+                        params.put("hemisphere", hemisphere);
+                        params.put("easting", easting);
+                        params.put("northing", northing);
+                        params.put("find", sample);
+                        params.put("imageName", currentName);
+                        params.put("imageBase64", currentImageBase64);
+                        Log.d("cool", String.valueOf(currentImageBase64.length()));
+                        return params;
+                    }
+                }; //end of defining current POST request
+                queue.add(stringRequest);
+            }//end of for loop
         }
         else
         {
@@ -319,7 +352,7 @@ public class SyncActivity extends AppCompatActivity
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, output);
         byte[] imgBytes = output.toByteArray();
-        return android.util.Base64.encodeToString(imgBytes, android.util.Base64.DEFAULT);
+        return android.util.Base64.encodeToString(imgBytes, android.util.Base64.NO_WRAP);
     }
 
     private StringObjectResponseWrapper getImageResponseWrapper() {
