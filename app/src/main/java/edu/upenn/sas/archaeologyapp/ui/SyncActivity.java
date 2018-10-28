@@ -209,11 +209,18 @@ public class SyncActivity extends AppCompatActivity
                 //imageNames.get(i) and imageBase64.get(i)
                 String currentName = imageNames.get(i);
                 String currentImageBase64 = imageBase64.get(i);
+                String currentIndex = String.valueOf(i + 1);
                 StringRequest stringRequest = new StringRequest(Request.Method.POST, globalWebServerURL + "/insert_find_image",
                         new Response.Listener<String>() {
                             @Override
                             public void onResponse(String response) {
                                 Log.d("Res++", response);
+                                if (!response.contains("Error")) {
+                                    //count image success
+                                } else {
+                                    Toast.makeText(getApplicationContext(), "Upload failed: " + response,
+                                            Toast.LENGTH_SHORT).show();
+                                }
                             }
                         }, new Response.ErrorListener() {
                     @Override
@@ -232,6 +239,7 @@ public class SyncActivity extends AppCompatActivity
                         params.put("find", sample);
                         params.put("imageName", currentName);
                         params.put("imageBase64", currentImageBase64);
+                        params.put("indexNum", currentIndex);
                         Log.d("cool", String.valueOf(currentImageBase64.length()));
                         return params;
                     }
