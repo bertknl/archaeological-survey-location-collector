@@ -177,15 +177,16 @@ public class MainActivity extends BaseActivity implements SwipeRefreshLayout.OnR
                         displayMode = FINDS_MODE;
                         listView.setAdapter(findsListEntryAdapter);
                         setTitle(R.string.title_activity_main);
-                        break;
+                        populateDataFromLocalStore();
+                        return true;
                     case R.id.navigation_paths:
                         // Clicked on paths button
                         displayMode = PATHS_MODE;
                         listView.setAdapter(pathsListEntryAdapter);
                         setTitle(R.string.title_activity_paths);
-                        break;
+                        populateDataFromLocalStore();
+                        return true;
                 }
-                populateDataFromLocalStore();
                 return false;
             }
         });
