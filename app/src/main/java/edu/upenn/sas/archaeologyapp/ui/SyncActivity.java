@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -30,6 +31,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import edu.upenn.sas.archaeologyapp.R;
 import edu.upenn.sas.archaeologyapp.models.PathElement;
@@ -47,6 +49,9 @@ public class SyncActivity extends AppCompatActivity
     // The button the user clicks to initiate the sync process
     Button syncButton;
     ProgressBar progressBar;
+    TextView logText;
+    AtomicInteger counter = new AtomicInteger();
+    int totalImages;
     private HashMap<String, Integer> imageNumbers = new HashMap<>();
     // A list of records populated from the local database, that need to be uploaded onto the server
     ArrayList<DataEntryElement> elementsToUpload;
@@ -77,6 +82,12 @@ public class SyncActivity extends AppCompatActivity
         totalPaths = pathsToUpload.size();
         pathUploadIndex = 0;
         progressBar = findViewById(R.id.progress);
+        logText = findViewById(R.id.logText);
+        counter.set(0);
+        totalImages = 0;
+        for (DataEntryElement e: elementsToUpload) {
+            totalImages += e.getImagePaths().size();
+        }
         // Attach a click listener to the sync button, and trigger the sync process on click of the button
         syncButton = findViewById(R.id.sync_button_sync_activity);
         syncButton.setOnClickListener(new View.OnClickListener() {
@@ -155,6 +166,7 @@ public class SyncActivity extends AppCompatActivity
                     Log.v("Sync", response);
                     if (!response.contains("Error"))
                     {
+                        logText.setText(logText.getText().toString() + response);
                         databaseHandler.setFindSynced(find);
                         ArrayList<String> paths = elementsToUpload.get(uploadIndex).getImagePaths();
                         String key = hemisphere + "." + zone + "." + contextEasting + "." + contextNorthing + "." + find;
@@ -203,8 +215,11 @@ public class SyncActivity extends AppCompatActivity
                                     @Override
                                     public void onResponse(String response) {
                                         Log.d("Res++", response);
+                                        logText.setText(logText.getText().toString() + response);
                                         if (!response.contains("Error")) {
                                             //count image success
+                                            counter.getAndAdd(1);
+                                            progressBar.setProgress( (int) ((double)counter.get()/(totalImages) * 100));
                                         } else {
                                             Toast.makeText(getApplicationContext(), "Upload failed: " + response,
                                                     Toast.LENGTH_SHORT).show();
@@ -234,7 +249,7 @@ public class SyncActivity extends AppCompatActivity
                         }; //end of defining current POST request
                         queue.add(stringRequest);
                     }//end of for loop
-                    progressBar.setProgress( (int) ((double)(uploadIndex)/(totalItems) * 100));
+                   // progressBar.setProgress( (int) ((double)(uploadIndex)/(totalItems) * 100));
                     uploadFinds();
                 }
 
