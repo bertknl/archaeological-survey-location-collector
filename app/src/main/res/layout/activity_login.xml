@@ -18,14 +18,17 @@
 
     <EditText
         android:id="@+id/userPassword"
-        android:layout_width="153dp"
-        android:layout_height="49dp"
-        android:layout_marginEnd="56dp"
-        android:layout_marginBottom="372dp"
+        android:layout_width="150dp"
+        android:layout_height="37dp"
+        android:layout_marginEnd="60dp"
+        android:layout_marginBottom="392dp"
         android:ems="10"
         android:inputType="textPassword"
+        android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/userName"
+        app:layout_constraintVertical_bias="0.958" />
 
     <TextView
         android:id="@+id/textView4"
@@ -53,15 +56,14 @@
 
     <EditText
         android:id="@+id/userName"
-        android:layout_width="155dp"
-        android:layout_height="51dp"
+        android:layout_width="150dp"
+        android:layout_height="37dp"
+        android:layout_marginTop="232dp"
+        android:layout_marginEnd="60dp"
         android:ems="10"
         android:inputType="text"
-        app:layout_constraintBottom_toTopOf="@+id/userPassword"
+        android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.573"
-        app:layout_constraintStart_toEndOf="@+id/textView4"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.916" />
+        app:layout_constraintTop_toTopOf="parent" />
 
 </android.support.constraint.ConstraintLayout>
