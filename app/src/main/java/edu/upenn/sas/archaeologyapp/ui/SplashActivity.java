@@ -31,7 +31,11 @@ public class SplashActivity extends BaseActivity
             {
                 // Here' we change the starting screen from Mainactivity to Login.
                 //Without a proper login token. We do not allow using the application.
+
+                //Here check if we have already saved the token. If no, we go to login screen
+
                 SplashActivity.super.startActivityUsingIntent(LoginActivity.class);
+               // SplashActivity.super.startActivityUsingIntent(MainActivity.class);
             }
         }, Constants.SPLASH_TIME_OUT);
     }

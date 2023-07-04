@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -41,10 +42,14 @@ public class LoginActivity extends BaseActivity{
                     @Override
                     public void onResponse(JSONObject response) {
                         System.out.println("String Response : "+ response.toString());
+                        Toast.makeText(LoginActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
+
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                Toast.makeText(LoginActivity.this, "Wrong username and/or password ", Toast.LENGTH_SHORT).show();
+
                 System.out.println(("Error getting response"));
                 System.out.println(error);
             }
@@ -78,6 +83,9 @@ public class LoginActivity extends BaseActivity{
                 String userPasswordStr =   (userPassword.getText().toString());
                 if (userNameStr != null && !userNameStr.isEmpty() && userPasswordStr !=null && !userPasswordStr.isEmpty()){
                     loginAndGetToken(userNameStr, userPasswordStr);
+                }else{
+                    Toast.makeText(LoginActivity.this, "Both fields cannot be empty", Toast.LENGTH_SHORT).show();
+
                 }
             }
         });
