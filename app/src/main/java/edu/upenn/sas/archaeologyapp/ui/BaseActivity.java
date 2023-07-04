@@ -1,14 +1,21 @@
 package edu.upenn.sas.archaeologyapp.ui;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.security.keystore.KeyGenParameterSpec;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.WindowManager;
+
+
+
 /**
  * Created by eanvith on 24/12/16.
+
  */
 public class BaseActivity extends AppCompatActivity
 {
+
     /**
      * Function to make the activity full screen
      */

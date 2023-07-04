@@ -1,13 +1,19 @@
 package edu.upenn.sas.archaeologyapp.ui;
 
 
+import static edu.upenn.sas.archaeologyapp.models.SecretData.setToken;
 import static edu.upenn.sas.archaeologyapp.util.Constants.LOGIN_SERVER_URL;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import androidx.security.crypto.EncryptedSharedPreferences;
+import androidx.security.crypto.MasterKeys;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -19,14 +25,25 @@ import com.android.volley.toolbox.Volley;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+
 import edu.upenn.sas.archaeologyapp.R;
 import edu.upenn.sas.archaeologyapp.util.Constants;
 
 public class LoginActivity extends BaseActivity{
+    Context context = this;
 
 
-    //For now, we use
+
     private void loginAndGetToken(String userName, String userPassword){
+        try {
+            setToken(userPassword, context);
+        } catch (GeneralSecurityException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         JSONObject object = new JSONObject();
         try {
