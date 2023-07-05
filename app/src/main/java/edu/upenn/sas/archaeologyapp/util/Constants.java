@@ -24,6 +24,7 @@ public class Constants
     public static final String PARAM_KEY_END_AR_RATIO = "end_AR_ratio", DEFAULT_REACH_HOST = "192.168.43.162";
     public static final int DEFAULT_POSITION_UPDATE_INTERVAL = 2, DEFAULT_VOLLEY_TIMEOUT = 15000;
     public static final String LOGIN_SERVER_URL = "https://j20200007.kotsf.com/asl/auth-token/";
+    public static final String TOKEN_ACCESS_TESTING_URL = "https://j20200007.kotsf.com/asl/api/area/";
     public static final String DEFAULT_REACH_PORT = "9001";
     private static final String DEFAULT_WEB_SERVER_URL = "http://40.117.209.97";
 

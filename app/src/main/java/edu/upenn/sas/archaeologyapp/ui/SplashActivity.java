@@ -2,19 +2,19 @@ package edu.upenn.sas.archaeologyapp.ui;
 
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Bundle;
-
-import androidx.security.crypto.EncryptedSharedPreferences;
-import androidx.security.crypto.MasterKeys;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 
 import edu.upenn.sas.archaeologyapp.R;
 import edu.upenn.sas.archaeologyapp.util.Constants;
-import static edu.upenn.sas.archaeologyapp.models.SecretData.getToken;
+import edu.upenn.sas.archaeologyapp.util.ExtraTypes;
+
+import static edu.upenn.sas.archaeologyapp.models.UserAuthentication.getToken;
+import static edu.upenn.sas.archaeologyapp.models.UserAuthentication.tokenHaveAccess;
+
 /**
  * The splash activity
  * @author Created by eanvith on 24/12/16.
@@ -36,7 +36,9 @@ public class SplashActivity extends BaseActivity
         // Setting the layout for this activity
         setContentView(R.layout.activity_splash);
 
-        // Wait for specified time and start main activity
+        ExtraTypes.ChangeActivityFunction changeToLoginActivity = () ->{SplashActivity.super.startActivityUsingIntent(LoginActivity.class);};
+        ExtraTypes.ChangeActivityFunction changeToMainActivity = () ->{SplashActivity.super.startActivityUsingIntent(MainActivity.class);};
+
         new Handler().postDelayed(new Runnable() {
             /**
              * Run the handler
@@ -44,22 +46,9 @@ public class SplashActivity extends BaseActivity
             @Override
             public void run()
             {
-                // Here' we change the starting screen from Mainactivity to Login.
-                //Without a proper login token. We do not allow using the application.
-
-                //Here check if we have already saved the token. If no, we go to login screen
-                System.out.println(1);
-
-                try {
-                    System.out.println(getToken(context));
-                } catch (GeneralSecurityException e) {
-                    throw new RuntimeException(e);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                System.out.println(2);
-                SplashActivity.super.startActivityUsingIntent(LoginActivity.class);
-               // SplashActivity.super.startActivityUsingIntent(MainActivity.class);
+                String token =  (getToken(context));
+                token = "***REMOVED***";
+                tokenHaveAccess(token, context, changeToLoginActivity, changeToMainActivity );
             }
         }, Constants.SPLASH_TIME_OUT);
     }
