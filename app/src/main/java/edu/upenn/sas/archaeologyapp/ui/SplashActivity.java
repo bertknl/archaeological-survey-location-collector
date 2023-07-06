@@ -1,18 +1,15 @@
 package edu.upenn.sas.archaeologyapp.ui;
 
-
 import android.content.Context;
 import android.os.Handler;
 import android.os.Bundle;
-
-
 import edu.upenn.sas.archaeologyapp.R;
 import edu.upenn.sas.archaeologyapp.util.Constants;
-
+import edu.upenn.sas.archaeologyapp.util.ExtraTypes.InjectableFunc;
 
 import static edu.upenn.sas.archaeologyapp.models.UserAuthentication.getToken;
 import static edu.upenn.sas.archaeologyapp.models.UserAuthentication.tokenHaveAccess;
-import edu.upenn.sas.archaeologyapp.util.ExtraTypes.ChangeActivityFunction;
+
 /**
  * The splash activity
  * @author Created by eanvith on 24/12/16.
@@ -34,9 +31,8 @@ public class SplashActivity extends BaseActivity
         // Setting the layout for this activity
         setContentView(R.layout.activity_splash);
 
-        ChangeActivityFunction changeToLoginActivity = () ->{
-            SplashActivity.super.startActivityUsingIntent(LoginActivity.class);};
-        ChangeActivityFunction changeToMainActivity = () ->{SplashActivity.super.startActivityUsingIntent(MainActivity.class);};
+        InjectableFunc handleTokenWithSuccess = () -> SplashActivity.super.startActivityUsingIntent(MainActivity.class);
+        InjectableFunc handleTokenWithoutSuccess = () -> SplashActivity.super.startActivityUsingIntent(LoginActivity.class);
 
         new Handler().postDelayed(new Runnable() {
             /**
@@ -46,7 +42,7 @@ public class SplashActivity extends BaseActivity
             public void run()
             {
                 String token =  (getToken(context));
-                tokenHaveAccess(token, context, changeToLoginActivity, changeToMainActivity );
+                tokenHaveAccess(token, context, handleTokenWithSuccess, handleTokenWithoutSuccess );
             }
         }, Constants.SPLASH_TIME_OUT);
     }

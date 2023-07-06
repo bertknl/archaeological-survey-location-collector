@@ -19,39 +19,33 @@ import com.android.volley.toolbox.Volley;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
 import java.util.HashMap;
 import java.util.Map;
 
+import edu.upenn.sas.archaeologyapp.ui.LoginActivity;
 import edu.upenn.sas.archaeologyapp.util.ExtraTypes;
-import edu.upenn.sas.archaeologyapp.util.ExtraTypes.StatusFunction;
+import edu.upenn.sas.archaeologyapp.util.ExtraTypes.InjectableFunc;
 
 public class UserAuthentication {
 
+    static public SharedPreferences getEncryptedSharedPreferences(Context context)  {
 
-    @FunctionalInterface
-    interface Headers {
-        void apply(Map<String, String> headers);
-
-    }
-
-    static public SharedPreferences getSharedPreferences(Context context) throws GeneralSecurityException, IOException {
-        String masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC);
-
-        return EncryptedSharedPreferences.create(
-                "encrypted_preferences", // fileName
-                masterKeyAlias, // masterKeyAlias
-                context, // context
-                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV, // prefKeyEncryptionScheme
-                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM // prefvalueEncryptionScheme
-        );
-
+        try {
+            return EncryptedSharedPreferences.create(
+                    "encrypted_preferences",
+                    MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC),
+                    context,
+                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            );
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     static public String getToken(Context context) {
         try {
-            return UserAuthentication.getSharedPreferences(context).getString("token", "");
+            return getToken(getEncryptedSharedPreferences(context));
         } catch (Exception e) {
             return "";
         }
@@ -67,8 +61,7 @@ public class UserAuthentication {
 
     static public boolean setToken(String token, Context context)  {
         try {
-            UserAuthentication.getSharedPreferences(context).edit().putString("token", token).apply();
-            return true;
+            return setToken(token, UserAuthentication.getEncryptedSharedPreferences(context));
         } catch (Exception e) {
             return false;
         }
@@ -83,7 +76,7 @@ public class UserAuthentication {
         }
     }
 
-    static public void tryLogin(String userName, String userPassword, Context context, StatusFunction handleSuccess, StatusFunction handleFailure) {
+    static public void tryLogin(String userName, String userPassword, Context context, InjectableFunc handleLoginSuccess, InjectableFunc handleLoginFailure) {
 
         JSONObject object = new JSONObject();
         try {
@@ -96,41 +89,35 @@ public class UserAuthentication {
 
         Request jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, LOGIN_SERVER_URL, object,
                 response -> {
-                    handleSuccess.apply();
-                    System.out.println(response);
+                    try {
+                        String token = response.getString("token");
+                        setToken( token, context);
+                        handleLoginSuccess.apply();
+                    } catch (JSONException e) {
+                        Toast.makeText(context, "Unexpected error parsing return JSON", Toast.LENGTH_SHORT).show();
+                        System.out.println("Unexpected error parsing return JSON");
+                        throw new RuntimeException(e);
+                    }
+
                 }, error -> {
-            handleFailure.apply();
+            handleLoginFailure.apply();
 
         });
         sendRequest(jsonObjectRequest, context);
     }
 
-    static public void tokenHaveAccess(String token, Context context, ExtraTypes.ChangeActivityFunction changeToLoginActivity,  ExtraTypes.ChangeActivityFunction changeToMainActivity  ) {
-        StatusFunction handleSuccess = () -> {
-
-            Toast.makeText(context, "token is valid!", Toast.LENGTH_SHORT).show();
-            System.out.println("token is valid");
-            changeToMainActivity.apply();
-        };
-        StatusFunction handleFailure = () -> {
-            Toast.makeText(context, "token is invalid", Toast.LENGTH_SHORT).show();
-            System.out.println("token is invalid");
-            changeToLoginActivity.apply();
-        };
+    static public void tokenHaveAccess(String token, Context context, InjectableFunc handleTokenWithSuccess,  InjectableFunc handleTokenWithoutSuccess  ) {
 
         Request jsonArrayRequest = new JsonArrayRequest(TOKEN_ACCESS_TESTING_URL,
                 response -> {
-                    handleSuccess.apply();
+                    handleTokenWithSuccess.apply();
                 }, error -> {
-
-            handleFailure.apply();
-
+            handleTokenWithoutSuccess.apply();
         }) {
             @Override
             public Map<String, String> getHeaders()  {
                 Map<String, String> params = new HashMap<String, String>();
                 params.put("Authorization", "Token " + token);
-
                 return params;
             }
         };

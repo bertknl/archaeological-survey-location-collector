@@ -190,12 +190,12 @@ public class MainActivity extends BaseActivity implements SwipeRefreshLayout.OnR
                         populateDataFromLocalStore();
                         return true;
                     case R.id.logout:
-                        //Disable the token
-                        //Go back to login screen
 
                         setToken("Disabled_string", context);
                         System.out.println("Disabled token");
+                        MainActivity.super.startActivityUsingIntent(LoginActivity.class);
                         Toast.makeText(context, "Disabled token", Toast.LENGTH_SHORT).show();
+
                 }
                 return false;
             }
