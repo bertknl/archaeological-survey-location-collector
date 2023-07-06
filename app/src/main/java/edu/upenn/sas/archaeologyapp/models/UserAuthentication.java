@@ -83,7 +83,7 @@ public class UserAuthentication {
         }
     }
 
-    static public void loginAndGetToken(String userName, String userPassword, Context context) {
+    static public void tryLogin(String userName, String userPassword, Context context, StatusFunction handleSuccess, StatusFunction handleFailure) {
 
         JSONObject object = new JSONObject();
         try {
@@ -94,11 +94,10 @@ public class UserAuthentication {
             e.printStackTrace();
         }
 
-        StatusFunction handleSuccess = () -> Toast.makeText(context, "Login successful", Toast.LENGTH_SHORT).show();
-        StatusFunction handleFailure = () -> Toast.makeText(context, "Wrong username and/or password ", Toast.LENGTH_SHORT).show();
         Request jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, LOGIN_SERVER_URL, object,
                 response -> {
                     handleSuccess.apply();
+                    System.out.println(response);
                 }, error -> {
             handleFailure.apply();
 
@@ -131,7 +130,7 @@ public class UserAuthentication {
             public Map<String, String> getHeaders()  {
                 Map<String, String> params = new HashMap<String, String>();
                 params.put("Authorization", "Token " + token);
-                System.out.println(params);
+
                 return params;
             }
         };

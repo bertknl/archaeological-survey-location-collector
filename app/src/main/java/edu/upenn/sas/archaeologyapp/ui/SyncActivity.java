@@ -325,7 +325,7 @@ public class SyncActivity extends AppCompatActivity
                 @Override
                 public void responseMethod(String response)
                 {
-                    System.out.println(response);
+
                     if (!response.contains("Error"))
                     {
                         databaseHandler.setPathSynced(path);

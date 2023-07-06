@@ -44,6 +44,7 @@ import edu.upenn.sas.archaeologyapp.util.Constants;
 import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.coords.UTMCoord;
 import static edu.upenn.sas.archaeologyapp.R.id.map;
+import static edu.upenn.sas.archaeologyapp.models.UserAuthentication.setToken;
 import static edu.upenn.sas.archaeologyapp.services.VolleyStringWrapper.makeVolleyStringObjectRequest;
 import static edu.upenn.sas.archaeologyapp.util.Constants.globalWebServerURL;
 /**
@@ -54,7 +55,9 @@ public class MainActivity extends BaseActivity implements SwipeRefreshLayout.OnR
 {
     // The shared preferences file name where we will store persistent app data
     public static final String PREFERENCES = "archaeological-survey-location-collector-preferences";
-    private static int FINDS_MODE = 0, PATHS_MODE = 1;
+    private static int FINDS_MODE = 0, PATHS_MODE = 1, USER_MODE = 2;
+
+    private Context context = this;
     private static final int MY_PERMISSION_ACCESS_FINE_LOCATION = 100, MY_PERMISSION_ACCESS_EXTERNAL_STORAGE = 200;
     // This int represents what we want to display (paths or finds). We start with finds.
     int displayMode = FINDS_MODE;
@@ -186,6 +189,13 @@ public class MainActivity extends BaseActivity implements SwipeRefreshLayout.OnR
                         setTitle(R.string.title_activity_paths);
                         populateDataFromLocalStore();
                         return true;
+                    case R.id.logout:
+                        //Disable the token
+                        //Go back to login screen
+
+                        setToken("Disabled_string", context);
+                        System.out.println("Disabled token");
+                        Toast.makeText(context, "Disabled token", Toast.LENGTH_SHORT).show();
                 }
                 return false;
             }
