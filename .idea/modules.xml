@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/archaeological-survey-location-collector.iml" filepath="$PROJECT_DIR$/.idea/archaeological-survey-location-collector.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/archaeological-survey-location-collector.iml" filepath="$PROJECT_DIR$/.idea/modules/archaeological-survey-location-collector.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/archaeological-survey-location-collector.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/archaeological-survey-location-collector.app.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/archaeological-survey-location-collector.app.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/archaeological-survey-location-collector.app.androidTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/archaeological-survey-location-collector.app.main.iml" filepath="$PROJECT_DIR$/.idea/modules/app/archaeological-survey-location-collector.app.main.iml" />
