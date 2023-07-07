@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.widget.Toast;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -135,6 +136,10 @@ public abstract class LocationCollector
         {
             // Register the listener with the Location Manager to receive location updates
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+            Location initialLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            if (initialLocation != null) {
+                updateGPSlocation(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
+            }
         }
     }
 

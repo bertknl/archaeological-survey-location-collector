@@ -1,14 +1,23 @@
 package edu.upenn.sas.archaeologyapp.ui;
+
+import android.content.Context;
 import android.os.Handler;
 import android.os.Bundle;
 import edu.upenn.sas.archaeologyapp.R;
 import edu.upenn.sas.archaeologyapp.util.Constants;
+import edu.upenn.sas.archaeologyapp.util.ExtraTypes.InjectableFunc;
+
+import static edu.upenn.sas.archaeologyapp.models.UserAuthentication.getToken;
+import static edu.upenn.sas.archaeologyapp.models.UserAuthentication.tokenHaveAccess;
+
 /**
  * The splash activity
  * @author Created by eanvith on 24/12/16.
  */
 public class SplashActivity extends BaseActivity
 {
+    private Context context = this;
+
     /**
      * App is launched
      * @param savedInstanceState - state from memory
@@ -21,7 +30,10 @@ public class SplashActivity extends BaseActivity
         super.requestFullScreenActivity();
         // Setting the layout for this activity
         setContentView(R.layout.activity_splash);
-        // Wait for specified time and start main activity
+
+        InjectableFunc handleTokenWithSuccess = () -> SplashActivity.super.startActivityUsingIntent(MainActivity.class);
+        InjectableFunc handleTokenWithoutSuccess = () -> SplashActivity.super.startActivityUsingIntent(LoginActivity.class);
+
         new Handler().postDelayed(new Runnable() {
             /**
              * Run the handler
@@ -29,8 +41,8 @@ public class SplashActivity extends BaseActivity
             @Override
             public void run()
             {
-                // The activity to start once the splash activity is complete
-                SplashActivity.super.startActivityUsingIntent(MainActivity.class);
+                String token =  (getToken(context));
+                tokenHaveAccess(token, context, handleTokenWithSuccess, handleTokenWithoutSuccess );
             }
         }, Constants.SPLASH_TIME_OUT);
     }

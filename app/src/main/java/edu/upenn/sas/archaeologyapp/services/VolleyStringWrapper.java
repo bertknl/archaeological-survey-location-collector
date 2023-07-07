@@ -1,6 +1,8 @@
 // String response
 // @author: msenol
 package edu.upenn.sas.archaeologyapp.services;
+import android.util.Log;
+
 import com.android.volley.RequestQueue;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
@@ -21,6 +23,8 @@ public class VolleyStringWrapper
                                                      final StringObjectResponseWrapper LAMBDA_WRAPPER)
     {
         // creating the listener to respond to object request
+        Log.d("sendingReq", URL);
+        Log.d("sendingReq", String.valueOf(URL.length()));
         StringRequest myRequest = new StringRequest(Request.Method.GET, URL, new Response.Listener<String>() {
             /**
              * Response received

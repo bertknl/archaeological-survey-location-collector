@@ -313,7 +313,7 @@ public class DataEntryActivity extends BaseActivity {
         materialsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         // Apply the adapter to the spinner
         materialsDropdown.setAdapter(materialsAdapter);
-        materialsDropdown.setSelection(1);
+        materialsDropdown.setSelection(0);
         prePopulateFields();
     }
 

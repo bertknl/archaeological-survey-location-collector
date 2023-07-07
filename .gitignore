@@ -8,3 +8,4 @@
 /captures
 .externalNativeBuild
 client_id.json
+**/*/res/values/secrets.xml

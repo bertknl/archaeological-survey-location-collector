@@ -10,5 +10,9 @@
         android:id="@+id/navigation_paths"
         android:icon="@drawable/baseline_pin_drop_white_24dp"
         android:title="Paths"/>
+    <item
+        android:id="@+id/logout"
+        android:icon="?android:attr/listChoiceIndicatorMultiple"
+        android:title="Logout" />
 
 </menu>
