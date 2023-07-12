@@ -5,10 +5,13 @@ import android.os.Handler;
 import android.os.Bundle;
 import edu.upenn.sas.archaeologyapp.R;
 import edu.upenn.sas.archaeologyapp.util.Constants;
-import edu.upenn.sas.archaeologyapp.util.ExtraTypes.InjectableFunc;
+import edu.upenn.sas.archaeologyapp.util.ExtraUtils.InjectableFunc;
 
-import static edu.upenn.sas.archaeologyapp.models.UserAuthentication.getToken;
-import static edu.upenn.sas.archaeologyapp.models.UserAuthentication.tokenHaveAccess;
+import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.getToken;
+import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.tokenHaveAccess;
+
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.Volley;
 
 /**
  * The splash activity
@@ -17,7 +20,7 @@ import static edu.upenn.sas.archaeologyapp.models.UserAuthentication.tokenHaveAc
 public class SplashActivity extends BaseActivity
 {
     private Context context = this;
-
+    private RequestQueue queue;
     /**
      * App is launched
      * @param savedInstanceState - state from memory
@@ -34,6 +37,8 @@ public class SplashActivity extends BaseActivity
         InjectableFunc handleTokenWithSuccess = () -> SplashActivity.super.startActivityUsingIntent(MainActivity.class);
         InjectableFunc handleTokenWithoutSuccess = () -> SplashActivity.super.startActivityUsingIntent(LoginActivity.class);
 
+        queue = Volley.newRequestQueue(context);
+
         new Handler().postDelayed(new Runnable() {
             /**
              * Run the handler
@@ -42,7 +47,7 @@ public class SplashActivity extends BaseActivity
             public void run()
             {
                 String token =  (getToken(context));
-                tokenHaveAccess(token, context, handleTokenWithSuccess, handleTokenWithoutSuccess );
+                tokenHaveAccess(token, handleTokenWithSuccess, handleTokenWithoutSuccess, queue );
             }
         }, Constants.SPLASH_TIME_OUT);
     }

@@ -42,8 +42,10 @@ import android.widget.ToggleButton;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.UUID;
 
@@ -58,6 +60,10 @@ import gov.nasa.worldwind.geom.coords.UTMCoord;
 import static edu.upenn.sas.archaeologyapp.util.Constants.DEFAULT_POSITION_UPDATE_INTERVAL;
 import static edu.upenn.sas.archaeologyapp.util.Constants.DEFAULT_REACH_HOST;
 import static edu.upenn.sas.archaeologyapp.util.Constants.DEFAULT_REACH_PORT;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * The Activity where the user enters all the data
@@ -93,6 +99,8 @@ public class DataEntryActivity extends BaseActivity {
     // The timestamp of the find's location
     private long timestamp;
 
+    private Context context;
+
     /**
      * Activity created
      *
@@ -101,6 +109,7 @@ public class DataEntryActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        context = this;
         setContentView(R.layout.activity_data_entry);
         initializeViews();
         // Load persistent app data from shared preferences
@@ -303,8 +312,11 @@ public class DataEntryActivity extends BaseActivity {
         // Configure the materials dropdown menu
         // Load the team member API response from saved preferences
         SharedPreferences settings = getSharedPreferences(PREFERENCES, 0);
-        String materialGeneralAPIResponse = settings.getString("materialGeneralAPIResponse", getString(R.string.default_material_general));
-        String materialGeneralOptions[] = materialGeneralAPIResponse.split("\\r?\\n");
+
+        String materialGeneralAPIResponse = settings.getString("materialGeneralAPIResponse", null);
+        String materialGeneralOptions[] = parseMaterialGeneralAPIResponse(materialGeneralAPIResponse, context);
+
+
         materialsDropdown = findViewById(R.id.data_entry_materials_drop_down);
         // Create an ArrayAdapter using the string array and a default spinner layout
         ArrayAdapter<String> materialsAdapter = new ArrayAdapter<>(this,
@@ -316,6 +328,28 @@ public class DataEntryActivity extends BaseActivity {
         materialsDropdown.setSelection(0);
         prePopulateFields();
     }
+
+    public static String[] parseMaterialGeneralAPIResponse(String materialGeneralAPIResponse, Context context) {
+        ArrayList<String> parsedStrings;
+        try {
+            parsedStrings = new ArrayList<>();
+            JSONArray parsedResponseJsonArray = new JSONArray(materialGeneralAPIResponse);
+            for (int i = 0; i < parsedResponseJsonArray.length(); i++) {
+                JSONObject obj = parsedResponseJsonArray.getJSONObject(i);
+                parsedStrings.add(obj.getString("material") + " : " + obj.getString("category"));
+            }
+
+        } catch (JSONException e) {
+            parsedStrings = new ArrayList<>();
+            String defaultMaterial = context.getString(R.string.default_material_general);
+            String defaultCategory = context.getString(R.string.default_material_category);
+            parsedStrings.add(defaultMaterial +" : " + defaultCategory);
+        }
+        Object[] parsedStringsObjectArray = parsedStrings.toArray();
+        return Arrays.copyOf(parsedStringsObjectArray, parsedStringsObjectArray.length, String[].class); // Arrays.stream(parsedStrings.toArray()).toArray(String[]::new);
+    }
+
+
 
     /**
      * Check if any parameters were passed to this activity, and pre populate the data if required
@@ -480,15 +514,15 @@ public class DataEntryActivity extends BaseActivity {
                             new File(img).delete();
                         }
                     }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                /**
-                 * User clicked cancel
-                 * @param dialog - alert dialog
-                 * @param id - button id
-                 */
-                public void onClick(final DialogInterface dialog, final int id) {
-                    dialog.cancel();
-                }
-            });
+                        /**
+                         * User clicked cancel
+                         * @param dialog - alert dialog
+                         * @param id - button id
+                         */
+                        public void onClick(final DialogInterface dialog, final int id) {
+                            dialog.cancel();
+                        }
+                    });
             AlertDialog alert = builder.create();
             image.setOnLongClickListener(new View.OnLongClickListener() {
                 /**

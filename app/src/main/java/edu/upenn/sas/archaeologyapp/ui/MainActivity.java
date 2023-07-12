@@ -21,6 +21,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.android.volley.RequestQueue;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.Volley;
@@ -33,6 +34,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import edu.upenn.sas.archaeologyapp.R;
@@ -44,9 +47,15 @@ import edu.upenn.sas.archaeologyapp.util.Constants;
 import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.coords.UTMCoord;
 import static edu.upenn.sas.archaeologyapp.R.id.map;
-import static edu.upenn.sas.archaeologyapp.models.UserAuthentication.setToken;
+
+import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.getToken;
+import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.setToken;
+
 import static edu.upenn.sas.archaeologyapp.services.VolleyStringWrapper.makeVolleyStringObjectRequest;
+import static edu.upenn.sas.archaeologyapp.services.requests.MaterialRequest.materialRequest;
+import static edu.upenn.sas.archaeologyapp.util.Constants.MATERIALS_URL;
 import static edu.upenn.sas.archaeologyapp.util.Constants.globalWebServerURL;
+
 /**
  * This activity shows the user the list of items presently in his bucket
  * @author Created by eanvith on 30/12/16.
@@ -85,6 +94,7 @@ public class MainActivity extends BaseActivity implements SwipeRefreshLayout.OnR
     // The text views for displaying latitude, longitude, altitude, and status values
     private TextView gridTextView, northingTextView, eastingTextView;
     // A request queue to handle python requests
+    private String token;
     RequestQueue queue;
     /**
      * Activity launched
@@ -94,6 +104,7 @@ public class MainActivity extends BaseActivity implements SwipeRefreshLayout.OnR
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        token = getToken(context);
         setContentView(R.layout.activity_main);
         queue = Volley.newRequestQueue(this);
         initializeViews();
@@ -603,6 +614,7 @@ public class MainActivity extends BaseActivity implements SwipeRefreshLayout.OnR
         SharedPreferences settings = getSharedPreferences(PREFERENCES, 0);
         final boolean teamMemberResponsePreviouslyLoaded = settings.contains("teamMemberAPIResponse");
         final boolean materialGeneralResponsePreviouslyLoaded = settings.contains("materialGeneralAPIResponse");
+
         makeVolleyStringObjectRequest(globalWebServerURL + "/get_team_members", queue, new StringObjectResponseWrapper() {
             /**
              * Server response
@@ -640,44 +652,12 @@ public class MainActivity extends BaseActivity implements SwipeRefreshLayout.OnR
                 }
             }
         });
-        makeVolleyStringObjectRequest(globalWebServerURL + "/get_material_generals", queue, new StringObjectResponseWrapper() {
-            /**
-             * Server response
-             * @param response - camera response
-             */
-            @Override
-            public void responseMethod(String response)
-            {
-                if (!response.contains("Error"))
-                {
-                    // Save this team member as the default
-                    SharedPreferences settings = getSharedPreferences(PREFERENCES, 0);
-                    SharedPreferences.Editor editor = settings.edit();
-                    editor.putString("materialGeneralAPIResponse", response);
-                    editor.commit();
-                }
-                else if (!materialGeneralResponsePreviouslyLoaded)
-                {
-                    Toast.makeText(getApplicationContext(), "Could not load general materials: " + response,
-                            Toast.LENGTH_SHORT).show();
-                }
-            }
 
-            /**
-             * Server error
-             * @param error - failure
-             */
-            @Override
-            public void errorMethod(VolleyError error)
-            {
-                if (!materialGeneralResponsePreviouslyLoaded)
-                {
-                    Toast.makeText(getApplicationContext(), "Could not load general materials (Communication error): "
-                            + error, Toast.LENGTH_SHORT).show();
-                    error.printStackTrace();
-                }
-            }
-        });
+        Map<String, String> headers = new HashMap<String, String>();
+        headers.put("Authorization", "Token " + getToken(context));
+        materialRequest(MATERIALS_URL,getToken(context),queue,context,materialGeneralResponsePreviouslyLoaded, PREFERENCES);
+
+
     }
 
     /**

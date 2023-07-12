@@ -26,7 +26,19 @@ public class Constants
     public static final String LOGIN_SERVER_URL = "https://j20200007.kotsf.com/asl/auth-token/";
     public static final String TOKEN_ACCESS_TESTING_URL = "https://j20200007.kotsf.com/asl/api/area/";
     public static final String DEFAULT_REACH_PORT = "9001";
+
+    public static final String TEAM_MEMBERS_URL = "https://j20200007.kotsf.com/asl/api/team/";
+
+    public static final String MATERIALS_URL = "https://j20200007.kotsf.com/asl/api/find/mc/";
+
+    public static final String INSERT_PATH_URL ="https://j20200007.kotsf.com/asl/api/path";
+
+    public static final String INSERT_FIND_URL ="https://j20200007.kotsf.com/asl/api/find";
+
+    public static final String INSERT_FIND_IMAGE_URL ="https://j20200007.kotsf.com/asl/api/find/<uuid>/photo";
+
     private static final String DEFAULT_WEB_SERVER_URL = "http://40.117.209.97";
+    public static final String PREFERENCES = "archaeological-survey-location-collector-preferences";
 
     public static String globalWebServerURL = DEFAULT_WEB_SERVER_URL;
 }

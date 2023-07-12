@@ -1,4 +1,4 @@
-package edu.upenn.sas.archaeologyapp.models;
+package edu.upenn.sas.archaeologyapp.services;
 
 import static edu.upenn.sas.archaeologyapp.util.Constants.LOGIN_SERVER_URL;
 import static edu.upenn.sas.archaeologyapp.util.Constants.TOKEN_ACCESS_TESTING_URL;
@@ -14,7 +14,6 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,9 +21,7 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
-import edu.upenn.sas.archaeologyapp.ui.LoginActivity;
-import edu.upenn.sas.archaeologyapp.util.ExtraTypes;
-import edu.upenn.sas.archaeologyapp.util.ExtraTypes.InjectableFunc;
+import edu.upenn.sas.archaeologyapp.util.ExtraUtils.InjectableFunc;
 
 public class UserAuthentication {
 
@@ -76,7 +73,7 @@ public class UserAuthentication {
         }
     }
 
-    static public void tryLogin(String userName, String userPassword, Context context, InjectableFunc handleLoginSuccess, InjectableFunc handleLoginFailure) {
+    static public void tryLogin(String userName, String userPassword, Context context, InjectableFunc handleLoginSuccess, InjectableFunc handleLoginFailure, RequestQueue queue) {
 
         JSONObject object = new JSONObject();
         try {
@@ -103,10 +100,11 @@ public class UserAuthentication {
             handleLoginFailure.apply();
 
         });
-        sendRequest(jsonObjectRequest, context);
+        queue.add(jsonObjectRequest);
+
     }
 
-    static public void tokenHaveAccess(String token, Context context, InjectableFunc handleTokenWithSuccess,  InjectableFunc handleTokenWithoutSuccess  ) {
+    static public void tokenHaveAccess(String token,  InjectableFunc handleTokenWithSuccess,  InjectableFunc handleTokenWithoutSuccess, RequestQueue queue  ) {
 
         Request jsonArrayRequest = new JsonArrayRequest(TOKEN_ACCESS_TESTING_URL,
                 response -> {
@@ -121,14 +119,13 @@ public class UserAuthentication {
                 return params;
             }
         };
-        sendRequest(jsonArrayRequest, context);
+
+        queue.add(jsonArrayRequest);
 
     }
 
-    static private void sendRequest(Request request, Context context) {
-        RequestQueue queue = Volley.newRequestQueue(context);
-        queue.add(request);
-    }
+
+
 
 
 }

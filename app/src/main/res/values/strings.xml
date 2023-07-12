@@ -67,6 +67,7 @@
     <string name="connected">Connected</string>
     <string name="default_team_member">Other</string>
     <string name="default_material_general">Other</string>
+    <string name="default_material_category">Other</string>
     <string name = "path_by_frmt">Path by %s</string>
     <string name = "start_point">Start Point</string>
     <string name = "end_point">End Point</string>
