@@ -45,6 +45,7 @@ public class MaterialRequest {
     private static Response.Listener<JSONArray> getRequestSuccessHandler(Context context) {
 
         Listener<JSONArray> successHandler = response -> putString("materialGeneralAPIResponse", response.toString(), context);
+        System.out.println("Successful request for material");
         return successHandler;
     }
 

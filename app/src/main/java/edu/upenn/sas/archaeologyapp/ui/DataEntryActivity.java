@@ -2,6 +2,7 @@ package edu.upenn.sas.archaeologyapp.ui;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.DownloadManager;
 import android.content.ClipData;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -47,6 +48,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import edu.upenn.sas.archaeologyapp.services.LocationCollector;
@@ -57,9 +59,15 @@ import edu.upenn.sas.archaeologyapp.util.Constants;
 import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.coords.UTMCoord;
 
+import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.getToken;
+import static edu.upenn.sas.archaeologyapp.services.requests.ContextRequest.contextRequest;
+import static edu.upenn.sas.archaeologyapp.services.requests.ContextRequest.getContextURL;
 import static edu.upenn.sas.archaeologyapp.util.Constants.DEFAULT_POSITION_UPDATE_INTERVAL;
 import static edu.upenn.sas.archaeologyapp.util.Constants.DEFAULT_REACH_HOST;
 import static edu.upenn.sas.archaeologyapp.util.Constants.DEFAULT_REACH_PORT;
+
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.Volley;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -101,6 +109,8 @@ public class DataEntryActivity extends BaseActivity {
 
     private Context context;
 
+    private RequestQueue requestQueue;
+
     /**
      * Activity created
      *
@@ -110,6 +120,7 @@ public class DataEntryActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         context = this;
+        requestQueue = Volley.newRequestQueue(context);
         setContentView(R.layout.activity_data_entry);
         initializeViews();
         // Load persistent app data from shared preferences
@@ -311,10 +322,10 @@ public class DataEntryActivity extends BaseActivity {
         });
         // Configure the materials dropdown menu
         // Load the team member API response from saved preferences
-        SharedPreferences settings = getSharedPreferences(PREFERENCES, 0);
 
-        String materialGeneralAPIResponse = settings.getString("materialGeneralAPIResponse", null);
-        String materialGeneralOptions[] = parseMaterialGeneralAPIResponse(materialGeneralAPIResponse, context);
+
+
+        String materialGeneralOptions[] = getMaterialCategoryOptions( context);
 
 
         materialsDropdown = findViewById(R.id.data_entry_materials_drop_down);
@@ -327,6 +338,14 @@ public class DataEntryActivity extends BaseActivity {
         materialsDropdown.setAdapter(materialsAdapter);
         materialsDropdown.setSelection(0);
         prePopulateFields();
+    }
+
+    @NonNull
+    public static String[] getMaterialCategoryOptions(Context context) {
+        SharedPreferences settings = context.getSharedPreferences(PREFERENCES, 0);
+        String materialGeneralAPIResponse = settings.getString("materialGeneralAPIResponse", null);
+        String materialCategoryOptions[] = parseMaterialGeneralAPIResponse(materialGeneralAPIResponse, context);
+        return materialCategoryOptions;
     }
 
     public static String[] parseMaterialGeneralAPIResponse(String materialGeneralAPIResponse, Context context) {
@@ -591,6 +610,22 @@ public class DataEntryActivity extends BaseActivity {
             eastingTextView.setText(String.valueOf(easting));
             sampleTextView.setText(String.valueOf(sample));
             timestamp = (new Date()).getTime();
+            //Here, call the request to get the context information for this locatiuon
+
+            contextRequest(getContextURL("N", 38, 478130,4419430), getToken(context), requestQueue, context, response->{
+                JSONArray jsonArray = response;
+                List<Integer> context_numbers = new ArrayList<Integer>();
+                for(int i = 0; i < jsonArray.length(); i++){
+                    try {
+                        JSONObject obj = (JSONObject) jsonArray.get(i);
+                        context_numbers.add(obj.getInt("context_number"));
+                    } catch (JSONException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                System.out.println(context_numbers);
+            });
+
         }
     }
 

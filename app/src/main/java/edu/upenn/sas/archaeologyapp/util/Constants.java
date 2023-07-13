@@ -31,12 +31,13 @@ public class Constants
 
     public static final String MATERIALS_URL = "https://j20200007.kotsf.com/asl/api/find/mc/";
 
-    public static final String INSERT_PATH_URL ="https://j20200007.kotsf.com/asl/api/path";
+    public static final String INSERT_PATH_URL ="https://j20200007.kotsf.com/asl/api/path/";
 
-    public static final String INSERT_FIND_URL ="https://j20200007.kotsf.com/asl/api/find";
+    public static final String INSERT_FIND_URL ="https://j20200007.kotsf.com/asl/api/find/";
 
     public static final String INSERT_FIND_IMAGE_URL ="https://j20200007.kotsf.com/asl/api/find/<uuid>/photo";
 
+    public static final String CONTEXT_URL = "https://j20200007.kotsf.com/asl/api/context/<hemisphere>/<zone>/<easting>/<northing>/";
     private static final String DEFAULT_WEB_SERVER_URL = "http://40.117.209.97";
     public static final String PREFERENCES = "archaeological-survey-location-collector-preferences";
 

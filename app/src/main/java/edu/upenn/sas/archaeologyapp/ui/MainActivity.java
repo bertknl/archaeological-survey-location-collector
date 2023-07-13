@@ -52,6 +52,8 @@ import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.getToken;
 import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.setToken;
 
 import static edu.upenn.sas.archaeologyapp.services.VolleyStringWrapper.makeVolleyStringObjectRequest;
+import static edu.upenn.sas.archaeologyapp.services.requests.ContextRequest.contextRequest;
+import static edu.upenn.sas.archaeologyapp.services.requests.ContextRequest.getContextURL;
 import static edu.upenn.sas.archaeologyapp.services.requests.MaterialRequest.materialRequest;
 import static edu.upenn.sas.archaeologyapp.util.Constants.MATERIALS_URL;
 import static edu.upenn.sas.archaeologyapp.util.Constants.globalWebServerURL;
@@ -653,10 +655,7 @@ public class MainActivity extends BaseActivity implements SwipeRefreshLayout.OnR
             }
         });
 
-        Map<String, String> headers = new HashMap<String, String>();
-        headers.put("Authorization", "Token " + getToken(context));
         materialRequest(MATERIALS_URL,getToken(context),queue,context,materialGeneralResponsePreviouslyLoaded, PREFERENCES);
-
 
     }
 

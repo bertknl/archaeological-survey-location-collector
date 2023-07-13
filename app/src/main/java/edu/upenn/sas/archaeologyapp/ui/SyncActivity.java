@@ -1,4 +1,5 @@
 package edu.upenn.sas.archaeologyapp.ui;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -38,8 +39,20 @@ import edu.upenn.sas.archaeologyapp.models.PathElement;
 import edu.upenn.sas.archaeologyapp.models.StringObjectResponseWrapper;
 import edu.upenn.sas.archaeologyapp.models.DataEntryElement;
 import edu.upenn.sas.archaeologyapp.services.DatabaseHandler;
+
+import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.getToken;
 import static edu.upenn.sas.archaeologyapp.services.VolleyStringWrapper.makeVolleyStringObjectRequest;
+import static edu.upenn.sas.archaeologyapp.services.requests.ContextRequest.contextRequest;
+import static edu.upenn.sas.archaeologyapp.services.requests.ContextRequest.getContextURL;
+import static edu.upenn.sas.archaeologyapp.services.requests.InsertFindRequest.createInsertMaterialParametersObject;
+import static edu.upenn.sas.archaeologyapp.services.requests.InsertFindRequest.insertFindRequest;
+import static edu.upenn.sas.archaeologyapp.ui.DataEntryActivity.getMaterialCategoryOptions;
+import static edu.upenn.sas.archaeologyapp.util.Constants.INSERT_FIND_URL;
 import static edu.upenn.sas.archaeologyapp.util.Constants.globalWebServerURL;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 /**
  * This activity is responsible for uploading all the records from the local database onto a server.
  * @author eanvith, Colin Roberts, Christopher Besser.
@@ -48,6 +61,8 @@ public class SyncActivity extends AppCompatActivity
 {
     // The button the user clicks to initiate the sync process
     Button syncButton;
+
+    Context context;
     ProgressBar progressBar;
     TextView logText;
     AtomicInteger counter = new AtomicInteger();
@@ -71,6 +86,7 @@ public class SyncActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        context = this;
         setContentView(R.layout.activity_sync);
         queue = Volley.newRequestQueue(this);
         // Initialize the database helper class object, and read in the records from the local database
@@ -105,12 +121,30 @@ public class SyncActivity extends AppCompatActivity
                 }
                 // Disable the sync button while the sync is in progress
                 syncButton.setEnabled(false);
+                //String[] materialCategoryPairs =getMaterialCategoryOptions(context);
+
+                //JSONObject insertFindRequestParametersObject = createInsertMaterialParametersObject(context, "N", 38, 478130,4419430,1, null, null, "Bedfgdfgrt test");
+                //insertFindRequest(INSERT_FIND_URL, insertFindRequestParametersObject,getToken(context), queue,context);
+
+
                 // Start uploading unsynced items
-                uploadFinds();
+                //uploadFinds();
                 // Start uploading unsynced paths
-                uploadPaths();
+                //uploadPaths();
             }
         });
+    }
+
+
+    private void uploadFind(int findIndex){
+        final DataEntryElement find = elementsToUpload.get((findIndex));
+        String utm_hemisphere = find.getHemisphere();
+        int utm_zone =  find.getZone();
+        int area_utm_easting_meters =  find.getEasting() ;
+        int area_utm_northing_meters =  find.getNorthing();
+        int context_number =  find.getPreciseNorthing().intValue();
+
+
     }
 
     /**

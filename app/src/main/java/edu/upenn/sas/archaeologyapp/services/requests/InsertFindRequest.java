@@ -2,8 +2,11 @@ package edu.upenn.sas.archaeologyapp.services.requests;
 
 import static android.provider.Settings.Global.getString;
 import static edu.upenn.sas.archaeologyapp.ui.DataEntryActivity.PREFERENCES;
+import static edu.upenn.sas.archaeologyapp.ui.DataEntryActivity.getMaterialCategoryOptions;
 import static edu.upenn.sas.archaeologyapp.ui.DataEntryActivity.parseMaterialGeneralAPIResponse;
 import static edu.upenn.sas.archaeologyapp.util.Constants.DEFAULT_VOLLEY_TIMEOUT;
+import static edu.upenn.sas.archaeologyapp.util.Constants.INSERT_FIND_URL;
+import static edu.upenn.sas.archaeologyapp.util.Constants.LOGIN_SERVER_URL;
 import static edu.upenn.sas.archaeologyapp.util.ExtraUtils.putString;
 
 import android.content.Context;
@@ -16,6 +19,7 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -30,9 +34,12 @@ import edu.upenn.sas.archaeologyapp.R;
 public class InsertFindRequest {
 
 
-    public static void insertFindRequest(final String URL, String token, RequestQueue queue, Context context, boolean materialGeneralResponsePreviouslyLoaded, String PREFERENCES) {
 
-        Request jsonArrayRequest = new JsonArrayRequest(URL, getRequestSuccessHandler(context), getRequestFailureHandler(context, materialGeneralResponsePreviouslyLoaded)) {
+
+    public static void insertFindRequest(String URL, JSONObject parametersObject , String token, RequestQueue queue, Context context) {
+
+        Request jsonArrayRequest = new JsonObjectRequest(Request.Method.POST, URL, parametersObject,getRequestSuccessHandler(context)
+                ,getRequestFailureHandler(context) ) {
             @Override
             public Map<String, String> getHeaders() {
                 Map<String, String> params = new HashMap<String, String>();
@@ -45,23 +52,29 @@ public class InsertFindRequest {
         queue.add(jsonArrayRequest);
     }
 
-    private static Response.Listener<JSONArray> getRequestSuccessHandler(Context context) {
-        Response.Listener<JSONArray> successHandler = response -> {};
+    private static Response.Listener<JSONObject> getRequestSuccessHandler(Context context) {
+        Response.Listener<JSONObject> successHandler = response -> {
+            System.out.println("Success");
+            System.out.println("############");
+            System.out.println(response);
+            System.out.println("############");
+        };
         return successHandler;
     }
 
 
-    private static Response.ErrorListener getRequestFailureHandler(Context context, boolean materialGeneralResponsePreviouslyLoaded) {
-        Response.ErrorListener handleFailure = error -> {};
+    private static Response.ErrorListener getRequestFailureHandler(Context context) {
+        Response.ErrorListener handleFailure = error -> {
+            System.out.println("Failure");
+            System.out.println("############");
+            System.out.println(error);
+            System.out.println("############");
+        };
         return handleFailure;
     }
 
 
-    private class MaterialParameters{
-
-    }
-
-    public @NonNull MaterialParameters createInsertMaterialParametersObject(Context context, @NonNull String utm_hemisphere, @NonNull int utm_zone, @NonNull int area_utm_easting_meters, @NonNull int area_utm_northing_meters, @NonNull int context_number, String material, String category, String director_notes) {
+    public static @NonNull JSONObject createInsertMaterialParametersObject(Context context, @NonNull String utm_hemisphere, @NonNull int utm_zone, @NonNull int area_utm_easting_meters, @NonNull int area_utm_northing_meters, @NonNull int context_number, String material, String category, String director_notes) {
 
         //1. Checking the parameters are alright
         Objects.requireNonNull(utm_hemisphere);
@@ -80,12 +93,12 @@ public class InsertFindRequest {
         }
 
         if (material != null && category != null){
-            SharedPreferences settings = context.getSharedPreferences(PREFERENCES, 0);
-            String materialGeneralAPIResponse = settings.getString("materialGeneralAPIResponse", null);
-            String materialCategoryOptions[] = parseMaterialGeneralAPIResponse(materialGeneralAPIResponse, context);
+            String[] materialCategoryOptions = getMaterialCategoryOptions(context);
             boolean legitMaterialCategory = false;
             for (int i = 0; i < materialCategoryOptions.length; i++){
-                if (material +" : " + category == materialCategoryOptions[i]){
+                System.out.println( materialCategoryOptions[i]);
+                System.out.println(material +" : " + category );
+                if ( materialCategoryOptions[i].equals(material +" : " + category )){
                     legitMaterialCategory = true;
                     break;
                 }
@@ -94,7 +107,7 @@ public class InsertFindRequest {
                 throw new RuntimeException("The material and category is wrong");
             }
         }
-        //2. Packing the parameters into a nice JSON Array.
+        //2. Packing the parameters into a nice JSON Object.
 
         JSONObject parametersObj = new JSONObject();
         try {
@@ -103,12 +116,18 @@ public class InsertFindRequest {
             parametersObj.put("area_utm_easting_meters",area_utm_easting_meters);
             parametersObj.put("area_utm_northing_meters",area_utm_northing_meters);
             parametersObj.put("context_number",context_number);
+            parametersObj.put("material",material == null? JSONObject.NULL: material);
+            parametersObj.put("category",category == null? JSONObject.NULL: category);
+            parametersObj.put("director_notes",director_notes == null? JSONObject.NULL: director_notes);
+
 
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
 
-        return null;
+        return parametersObj;
     }
+
+
 
 }

@@ -79,6 +79,7 @@
     <string name = "fixed">Fixed</string>
     <string name = "updating">Updating</string>
     <string name = "select_material">Please select a material</string>
+    <string name = "select_context">Please select a context</string>
     <string name = "reach_host">Reach Host:</string>
     <string name = "reach_port">Reach Port:</string>
     <string name = "update_interval">Update Interval: (seconds) </string>
