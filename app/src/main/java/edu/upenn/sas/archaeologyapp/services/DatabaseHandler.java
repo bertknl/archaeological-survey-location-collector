@@ -21,7 +21,8 @@ public class DatabaseHandler extends SQLiteOpenHelper
     // Table Columns names
     private static final String KEY_ID = "bucket_id", KEY_LATITUDE = "latitude", KEY_LONGITUDE = "longitude";
     private static final String KEY_ALTITUDE = "altitude", KEY_STATUS = "status", KEY_AR_RATIO = "AR_ratio";
-    private static final String KEY_MATERIAL = "material", KEY_COMMENT = "comment";
+    private static final String KEY_MATERIAL = "material",KEY_CONTEXT_NUMBER = "context_number", KEY_COMMENT = "comment";
+
     private static final String KEY_CREATED_TIMESTAMP = "created_timestamp", KEY_UPDATED_TIMESTAMP = "updated_timestamp";
     private static final String KEY_ZONE = "zone", KEY_HEMISPHERE = "hemisphere";
     private static final String KEY_NORTHING = "northing", KEY_PRECISE_NORTHING = "precise_northing";
@@ -53,7 +54,7 @@ public class DatabaseHandler extends SQLiteOpenHelper
     {
         String CREATE_BUCKET_TABLE = "CREATE TABLE " + FINDS_TABLE_NAME + "(" + KEY_ID + " TEXT PRIMARY KEY,"
                 + KEY_LATITUDE + " FLOAT," + KEY_LONGITUDE + " FLOAT," + KEY_ALTITUDE + " FLOAT,"
-                + KEY_STATUS + " TEXT," + KEY_AR_RATIO + " FLOAT," + KEY_MATERIAL + " TEXT,"
+                + KEY_STATUS + " TEXT," + KEY_AR_RATIO + " FLOAT," + KEY_MATERIAL + " TEXT," + KEY_CONTEXT_NUMBER + " TEXT,"
                 + KEY_COMMENT + " TEXT," + KEY_UPDATED_TIMESTAMP + " INTEGER," + KEY_CREATED_TIMESTAMP + " INTEGER,"
                 + KEY_ZONE + " INTEGER," + KEY_HEMISPHERE + " TEXT," + KEY_NORTHING + " INTEGER,"
                 + KEY_PRECISE_NORTHING + " FLOAT," + KEY_EASTING + " INTEGER," + KEY_PRECISE_EASTING + " FLOAT,"
@@ -110,6 +111,7 @@ public class DatabaseHandler extends SQLiteOpenHelper
                 values.put(KEY_STATUS, e.getStatus());
                 values.put(KEY_AR_RATIO, e.getARRatio());
                 values.put(KEY_MATERIAL, e.getMaterial());
+                values.put(KEY_CONTEXT_NUMBER, e.getContextNumber());
                 values.put(KEY_COMMENT, e.getComments());
                 values.put(KEY_UPDATED_TIMESTAMP, e.getUpdateTimestamp());
                 values.put(KEY_ZONE, e.getZone());
@@ -171,6 +173,7 @@ public class DatabaseHandler extends SQLiteOpenHelper
             values.put(KEY_STATUS, entry.getStatus());
             values.put(KEY_AR_RATIO, entry.getARRatio());
             values.put(KEY_MATERIAL, entry.getMaterial());
+            values.put(KEY_CONTEXT_NUMBER, entry.getContextNumber());
             values.put(KEY_COMMENT, entry.getComments());
             values.put(KEY_UPDATED_TIMESTAMP, entry.getUpdateTimestamp());
             values.put(KEY_ZONE, entry.getZone());
@@ -329,6 +332,7 @@ public class DatabaseHandler extends SQLiteOpenHelper
                             cursor.getDouble(cursor.getColumnIndex(KEY_AR_RATIO)),
                             getImages(cursor.getString(cursor.getColumnIndex(KEY_ID))),
                             cursor.getString(cursor.getColumnIndex(KEY_MATERIAL)),
+                            cursor.getString(cursor.getColumnIndex(KEY_CONTEXT_NUMBER)),
                             cursor.getString(cursor.getColumnIndex(KEY_COMMENT)),
                             cursor.getLong(cursor.getColumnIndex(KEY_CREATED_TIMESTAMP)),
                             cursor.getLong(cursor.getColumnIndex(KEY_UPDATED_TIMESTAMP)),

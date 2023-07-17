@@ -34,8 +34,6 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import edu.upenn.sas.archaeologyapp.R;
@@ -52,8 +50,6 @@ import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.getToken;
 import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.setToken;
 
 import static edu.upenn.sas.archaeologyapp.services.VolleyStringWrapper.makeVolleyStringObjectRequest;
-import static edu.upenn.sas.archaeologyapp.services.requests.ContextRequest.contextRequest;
-import static edu.upenn.sas.archaeologyapp.services.requests.ContextRequest.getContextURL;
 import static edu.upenn.sas.archaeologyapp.services.requests.MaterialRequest.materialRequest;
 import static edu.upenn.sas.archaeologyapp.util.Constants.MATERIALS_URL;
 import static edu.upenn.sas.archaeologyapp.util.Constants.globalWebServerURL;
@@ -284,6 +280,8 @@ public class MainActivity extends BaseActivity implements SwipeRefreshLayout.OnR
                     paramsToPass.putDouble(Constants.PARAM_KEY_AR_RATIO, dataEntryElement.getARRatio());
                     paramsToPass.putStringArrayList(Constants.PARAM_KEY_IMAGES, dataEntryElement.getImagePaths());
                     paramsToPass.putString(Constants.PARAM_KEY_MATERIAL, dataEntryElement.getMaterial());
+                    paramsToPass.putString(Constants.PARAM_KEY_CONTEXT_NUMBER, dataEntryElement.getMaterial());
+
                     paramsToPass.putString(Constants.PARAM_KEY_COMMENTS, dataEntryElement.getComments());
                     startActivityUsingIntent(DataEntryActivity.class, false, paramsToPass);
                 }

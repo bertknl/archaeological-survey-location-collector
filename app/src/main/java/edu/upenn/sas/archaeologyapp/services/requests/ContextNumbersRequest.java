@@ -1,42 +1,30 @@
 package edu.upenn.sas.archaeologyapp.services.requests;
 
-import static edu.upenn.sas.archaeologyapp.ui.DataEntryActivity.getMaterialCategoryOptions;
 import static edu.upenn.sas.archaeologyapp.util.Constants.CONTEXT_URL;
 import static edu.upenn.sas.archaeologyapp.util.Constants.DEFAULT_VOLLEY_TIMEOUT;
-import static edu.upenn.sas.archaeologyapp.util.ExtraUtils.putString;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.widget.Toast;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.JsonObjectRequest;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
-public class ContextRequest {
+public class ContextNumbersRequest {
 
-    public static String getContextURL(String hemisphere, int zone, int easting, int northing){
-//
-        return CONTEXT_URL.replace("<hemisphere>", hemisphere)
-                .replace("<zone>", Integer.toString(zone))
-                .replace("<easting>",Integer.toString(easting))
-                .replace("<northing>", Integer.toString(northing));
 
-    }
-
-    public static void contextRequest(final String URL, String token, RequestQueue queue, Context context, @Nullable Response.Listener<JSONArray> reRequestHandler  ) {
+    public static void contextNumbersRequest(final String URL, String token, RequestQueue queue, Context context, @Nullable Response.Listener<JSONArray> reRequestHandler  ) {
 
         if (reRequestHandler == null){
             reRequestHandler = getRequestSuccessHandler(context);
@@ -73,6 +61,32 @@ public class ContextRequest {
             System.out.println("####");
         };
         return handleFailure;
+    }
+
+
+    public static String getContextURL(String hemisphere, int zone, int easting, int northing){
+//
+        return CONTEXT_URL.replace("<hemisphere>", hemisphere)
+                .replace("<zone>", Integer.toString(zone))
+                .replace("<easting>",Integer.toString(easting))
+                .replace("<northing>", Integer.toString(northing));
+
+    }
+
+    public static String [] contextJSONArray2ContextStrArray(JSONArray jsonArray){
+
+        List<String> contextNumbersList = new ArrayList<String>();
+        for(int i = 0; i < jsonArray.length(); i++){
+            try {
+                JSONObject obj = (JSONObject) jsonArray.get(i);
+                contextNumbersList.add(String.valueOf(obj.getInt("context_number")));
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        String [] contextNumbersString = contextNumbersList.toArray(new String[0]);
+        return contextNumbersString;
     }
 
 

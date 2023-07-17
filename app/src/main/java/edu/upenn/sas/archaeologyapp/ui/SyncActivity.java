@@ -2,10 +2,8 @@ package edu.upenn.sas.archaeologyapp.ui;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -24,11 +22,9 @@ import com.android.volley.toolbox.Volley;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,16 +38,7 @@ import edu.upenn.sas.archaeologyapp.services.DatabaseHandler;
 
 import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.getToken;
 import static edu.upenn.sas.archaeologyapp.services.VolleyStringWrapper.makeVolleyStringObjectRequest;
-import static edu.upenn.sas.archaeologyapp.services.requests.ContextRequest.contextRequest;
-import static edu.upenn.sas.archaeologyapp.services.requests.ContextRequest.getContextURL;
-import static edu.upenn.sas.archaeologyapp.services.requests.InsertFindRequest.createInsertMaterialParametersObject;
-import static edu.upenn.sas.archaeologyapp.services.requests.InsertFindRequest.insertFindRequest;
-import static edu.upenn.sas.archaeologyapp.ui.DataEntryActivity.getMaterialCategoryOptions;
-import static edu.upenn.sas.archaeologyapp.util.Constants.INSERT_FIND_URL;
 import static edu.upenn.sas.archaeologyapp.util.Constants.globalWebServerURL;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * This activity is responsible for uploading all the records from the local database onto a server.

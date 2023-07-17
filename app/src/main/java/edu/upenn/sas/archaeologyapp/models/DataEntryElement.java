@@ -7,7 +7,7 @@ import java.util.ArrayList;
 public class DataEntryElement
 {
     // The ID for this entry
-    private final String ID, STATUS, MATERIAL, COMMENTS, HEMISPHERE;
+    private final String ID, STATUS, MATERIAL, CONTEXT_NUMBER, COMMENTS, HEMISPHERE;
     private final double LATITUDE, LONGITUDE, ALTITUDE, PRECISE_NORTHING, PRECISE_EASTING;
     // The status of the position fetch
     private final Double AR_RATIO;
@@ -41,7 +41,7 @@ public class DataEntryElement
      * @param beenSynced - whether the find is synced
      */
     public DataEntryElement(String ID, double latitude, double longitude, double altitude, String status,
-                            Double ARRatio, ArrayList<String> imagePaths, String material, String comments,
+                            Double ARRatio, ArrayList<String> imagePaths, String material, String contextNumber, String comments,
                             long createdTimestamp, long updateTimestamp, Integer zone, String hemisphere,
                             Integer northing, Double preciseNorthing, Integer easting, Double preciseEasting,
                             Integer sample, boolean beenSynced)
@@ -54,6 +54,7 @@ public class DataEntryElement
         this.AR_RATIO = ARRatio;
         this.IMAGE_PATHS = imagePaths;
         this.MATERIAL = material;
+        this.CONTEXT_NUMBER = contextNumber;
         this.COMMENTS = comments;
         this.CREATED_TIME_STAMP = createdTimestamp;
         this.UPDATE_TIME_STAMP = updateTimestamp;
@@ -143,6 +144,10 @@ public class DataEntryElement
      * Get comments
      * @return Returns comments
      */
+
+    public String getContextNumber(){
+        return CONTEXT_NUMBER;
+    }
     public String getComments()
     {
         return COMMENTS;

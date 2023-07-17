@@ -2,7 +2,6 @@ package edu.upenn.sas.archaeologyapp.ui;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.DownloadManager;
 import android.content.ClipData;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -43,7 +42,6 @@ import android.widget.ToggleButton;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,8 +58,9 @@ import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.coords.UTMCoord;
 
 import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.getToken;
-import static edu.upenn.sas.archaeologyapp.services.requests.ContextRequest.contextRequest;
-import static edu.upenn.sas.archaeologyapp.services.requests.ContextRequest.getContextURL;
+import static edu.upenn.sas.archaeologyapp.services.requests.ContextNumbersRequest.contextJSONArray2ContextStrArray;
+import static edu.upenn.sas.archaeologyapp.services.requests.ContextNumbersRequest.contextNumbersRequest;
+import static edu.upenn.sas.archaeologyapp.services.requests.ContextNumbersRequest.getContextURL;
 import static edu.upenn.sas.archaeologyapp.util.Constants.DEFAULT_POSITION_UPDATE_INTERVAL;
 import static edu.upenn.sas.archaeologyapp.util.Constants.DEFAULT_REACH_HOST;
 import static edu.upenn.sas.archaeologyapp.util.Constants.DEFAULT_REACH_PORT;
@@ -100,6 +99,8 @@ public class DataEntryActivity extends BaseActivity {
     // The spinner for displaying the dropdown of materials
     Spinner materialsDropdown;
     // The text box where the user can enter comments
+
+    Spinner contextNumberDropdown;
     EditText commentsEditText;
     private Integer zone, northing, easting, sample;
     private Uri photoURI = null;
@@ -337,7 +338,12 @@ public class DataEntryActivity extends BaseActivity {
         // Apply the adapter to the spinner
         materialsDropdown.setAdapter(materialsAdapter);
         materialsDropdown.setSelection(0);
-        prePopulateFields();
+
+        contextNumbersRequest(getContextURL("N", 38, 478130,4419430), getToken(context), requestQueue, context, response->{
+            setUpContextNumberSelect(contextJSONArray2ContextStrArray(response));
+            prePopulateFields();
+        });
+
     }
 
     @NonNull
@@ -427,6 +433,19 @@ public class DataEntryActivity extends BaseActivity {
                 }
             }
         }
+
+        // Populate the material, if present
+        String passedContextNumber = getIntent().getStringExtra(Constants.PARAM_KEY_CONTEXT_NUMBER);
+        if (passedContextNumber != null) {
+            // Search the dropdown for a matching context number, and set to that if found
+            for (int i = 0; i < contextNumberDropdown.getCount(); i++) {
+                if (contextNumberDropdown.getItemAtPosition(i).toString().equalsIgnoreCase(passedContextNumber)) {
+                    contextNumberDropdown.setSelection(i);
+                }
+            }
+        }
+
+
         // Populate the comments, if present
         String passedComments = getIntent().getStringExtra(Constants.PARAM_KEY_COMMENTS);
         if (passedComments != null) {
@@ -588,6 +607,22 @@ public class DataEntryActivity extends BaseActivity {
         return image;
     }
 
+
+    private void setUpContextNumberSelect(String[] contextOptions){
+
+
+        contextNumberDropdown = findViewById(R.id.data_entry_context_select_dropdown);
+        // Create an ArrayAdapter using the string array and a default spinner layout
+        ArrayAdapter<String> contextNumberAdapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item, contextOptions);
+        // Specify the layout to use when the list of choices appears
+        contextNumberAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // Apply the adapter to the spinner
+        contextNumberDropdown.setAdapter(contextNumberAdapter);
+        contextNumberDropdown.setSelection(0);
+        prePopulateFields();
+        return ;
+    }
     /**
      * Set the UTM location
      */
@@ -612,18 +647,9 @@ public class DataEntryActivity extends BaseActivity {
             timestamp = (new Date()).getTime();
             //Here, call the request to get the context information for this locatiuon
 
-            contextRequest(getContextURL("N", 38, 478130,4419430), getToken(context), requestQueue, context, response->{
-                JSONArray jsonArray = response;
-                List<Integer> context_numbers = new ArrayList<Integer>();
-                for(int i = 0; i < jsonArray.length(); i++){
-                    try {
-                        JSONObject obj = (JSONObject) jsonArray.get(i);
-                        context_numbers.add(obj.getInt("context_number"));
-                    } catch (JSONException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-                System.out.println(context_numbers);
+            contextNumbersRequest(getContextURL("N", 38, 478130,4419430), getToken(context), requestQueue, context, response->{
+                setUpContextNumberSelect(contextJSONArray2ContextStrArray(response));
+
             });
 
         }
@@ -915,9 +941,10 @@ public class DataEntryActivity extends BaseActivity {
         }
         // Get the material and the comment
         String material = materialsDropdown.getSelectedItem().toString();
+        String contextNumber = contextNumberDropdown.getSelectedItem().toString();
         String comment = commentsEditText.getText().toString();
         return new DataEntryElement(id, latitude, longitude, altitude, status, ARRatio, photoPaths,
-                material, comment, timestamp, timestamp, zone, hemisphere,
+                material, contextNumber,comment, timestamp, timestamp, zone, hemisphere,
                 northing, preciseNorthing, easting, preciseEasting, sample, false);
     }
 
