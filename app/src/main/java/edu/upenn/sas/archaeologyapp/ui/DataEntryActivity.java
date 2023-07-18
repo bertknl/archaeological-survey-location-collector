@@ -943,6 +943,7 @@ public class DataEntryActivity extends BaseActivity {
         String material = materialsDropdown.getSelectedItem().toString();
         String contextNumber = contextNumberDropdown.getSelectedItem().toString();
         String comment = commentsEditText.getText().toString();
+
         return new DataEntryElement(id, latitude, longitude, altitude, status, ARRatio, photoPaths,
                 material, contextNumber,comment, timestamp, timestamp, zone, hemisphere,
                 northing, preciseNorthing, easting, preciseEasting, sample, false);
