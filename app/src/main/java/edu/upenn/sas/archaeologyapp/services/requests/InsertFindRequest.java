@@ -96,8 +96,7 @@ public class InsertFindRequest {
             String[] materialCategoryOptions = getMaterialCategoryOptions(context);
             boolean legitMaterialCategory = false;
             for (int i = 0; i < materialCategoryOptions.length; i++){
-                System.out.println( materialCategoryOptions[i]);
-                System.out.println(material +" : " + category );
+
                 if ( materialCategoryOptions[i].equals(material +" : " + category )){
                     legitMaterialCategory = true;
                     break;

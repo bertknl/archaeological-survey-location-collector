@@ -324,7 +324,7 @@ public class DatabaseHandler extends SQLiteOpenHelper
             {
                 do
                 {
-                     System.out.println("Debuggin 327");
+
                     DataEntryElement entry = new DataEntryElement(cursor.getString(cursor.getColumnIndex(KEY_ID)),
                             cursor.getDouble(cursor.getColumnIndex(KEY_LATITUDE)),
                             cursor.getDouble(cursor.getColumnIndex(KEY_LONGITUDE)),

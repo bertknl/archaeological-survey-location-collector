@@ -38,7 +38,12 @@ import edu.upenn.sas.archaeologyapp.services.DatabaseHandler;
 
 import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.getToken;
 import static edu.upenn.sas.archaeologyapp.services.VolleyStringWrapper.makeVolleyStringObjectRequest;
+import static edu.upenn.sas.archaeologyapp.services.requests.InsertFindRequest.createInsertMaterialParametersObject;
+import static edu.upenn.sas.archaeologyapp.services.requests.InsertFindRequest.insertFindRequest;
+import static edu.upenn.sas.archaeologyapp.util.Constants.INSERT_FIND_URL;
 import static edu.upenn.sas.archaeologyapp.util.Constants.globalWebServerURL;
+
+import org.json.JSONObject;
 
 /**
  * This activity is responsible for uploading all the records from the local database onto a server.
@@ -110,7 +115,7 @@ public class SyncActivity extends AppCompatActivity
                 syncButton.setEnabled(false);
                 //String[] materialCategoryPairs =getMaterialCategoryOptions(context);
 
-                //JSONObject insertFindRequestParametersObject = createInsertMaterialParametersObject(context, "N", 38, 478130,4419430,1, null, null, "Bedfgdfgrt test");
+                //JSONObject insertFindRequestParametersObject = createInsertMaterialParametersObject(context, "N", 38, 478130,4419430,1, "pottery", "rim", "Bedfgdfgrt test");
                 //insertFindRequest(INSERT_FIND_URL, insertFindRequestParametersObject,getToken(context), queue,context);
 
 
@@ -118,9 +123,15 @@ public class SyncActivity extends AppCompatActivity
                 //uploadFinds();
                 // Start uploading unsynced paths
                 //uploadPaths();
+                for(int i = 0 ; i< totalItems; i++) {
+                    uploadFind(i);
+
+                }
+
             }
         });
     }
+
 
 
     private void uploadFind(int findIndex){
@@ -129,10 +140,17 @@ public class SyncActivity extends AppCompatActivity
         int utm_zone =  find.getZone();
         int area_utm_easting_meters =  find.getEasting() ;
         int area_utm_northing_meters =  find.getNorthing();
-        int context_number =  find.getPreciseNorthing().intValue();
-
-
+        String context_number_string_stripped =  (find.getContextNumber()).replaceAll("[^\\d.]", "");;
+        int context_number =  Integer.parseInt(context_number_string_stripped) ;
+        //To avoid some complexity, we use a single field material to store and get both the material and category
+        String material_category_pair =find.getMaterial();
+        String material = material_category_pair.split(" : ")[0].trim();
+        String category = material_category_pair.split(" : ")[1].trim();
+        String directory_notes = find.getComments();
+        JSONObject insertFindRequestParametersObject = createInsertMaterialParametersObject(context, utm_hemisphere, utm_zone, area_utm_easting_meters,area_utm_northing_meters,context_number, material, category, directory_notes);
+       //nsertFindRequest(INSERT_FIND_URL, insertFindRequestParametersObject,getToken(context), queue,context);
     }
+
 
     /**
      * Upload a find to the database

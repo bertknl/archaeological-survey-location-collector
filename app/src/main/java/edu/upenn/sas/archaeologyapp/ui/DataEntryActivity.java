@@ -339,10 +339,11 @@ public class DataEntryActivity extends BaseActivity {
         materialsDropdown.setAdapter(materialsAdapter);
         materialsDropdown.setSelection(0);
 
-        contextNumbersRequest(getContextURL("N", 38, 478130,4419430), getToken(context), requestQueue, context, response->{
-            setUpContextNumberSelect(contextJSONArray2ContextStrArray(response));
-            prePopulateFields();
-        });
+
+
+        setUpContextNumberSelect(new String[]{"1 : new"});
+        prePopulateFields();
+
 
     }
 
@@ -619,13 +620,20 @@ public class DataEntryActivity extends BaseActivity {
         contextNumberAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         // Apply the adapter to the spinner
         contextNumberDropdown.setAdapter(contextNumberAdapter);
-        contextNumberDropdown.setSelection(0);
+        //We want the default to be the last non new element of the drop down .
+
+        if (contextNumberDropdown.getCount() > 1){
+            contextNumberDropdown.setSelection(contextNumberDropdown.getCount()-2);
+        }
+
         prePopulateFields();
         return ;
     }
     /**
      * Set the UTM location
      */
+
+
     private void setUTMLocation() {
         if (latitude != null && longitude != null) {
             DatabaseHandler databaseHandler = new DatabaseHandler(this);
@@ -648,8 +656,17 @@ public class DataEntryActivity extends BaseActivity {
             //Here, call the request to get the context information for this locatiuon
 
             contextNumbersRequest(getContextURL("N", 38, 478130,4419430), getToken(context), requestQueue, context, response->{
-                setUpContextNumberSelect(contextJSONArray2ContextStrArray(response));
-
+                String [] previousContexts = contextJSONArray2ContextStrArray(response);
+                int max = 0;
+                for (int i = 0; i < previousContexts.length; i++){
+                    int current_context_value = Integer.valueOf(previousContexts[i]);
+                    if (current_context_value > max){
+                        max = current_context_value;
+                    }
+                }
+                String [] extendedContextOptions =  Arrays.copyOf(previousContexts, previousContexts.length + 1);
+                extendedContextOptions[previousContexts.length] = (max + 1) +" : new";
+                setUpContextNumberSelect(extendedContextOptions);
             });
 
         }
