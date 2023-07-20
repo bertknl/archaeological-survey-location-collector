@@ -46,10 +46,12 @@ import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.coords.UTMCoord;
 import static edu.upenn.sas.archaeologyapp.R.id.map;
 
+import static edu.upenn.sas.archaeologyapp.services.RequestQueueSingleton.getRequestQueueSingleton;
 import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.getToken;
 import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.setToken;
 
 import static edu.upenn.sas.archaeologyapp.services.VolleyStringWrapper.makeVolleyStringObjectRequest;
+import static edu.upenn.sas.archaeologyapp.services.requests.InsertFindImageRequest.insertFindImageRequest;
 import static edu.upenn.sas.archaeologyapp.services.requests.MaterialRequest.materialRequest;
 import static edu.upenn.sas.archaeologyapp.util.Constants.MATERIALS_URL;
 import static edu.upenn.sas.archaeologyapp.util.Constants.globalWebServerURL;
@@ -101,10 +103,12 @@ public class MainActivity extends BaseActivity implements SwipeRefreshLayout.OnR
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
+
+        queue = getRequestQueueSingleton(getApplicationContext());;
+
         super.onCreate(savedInstanceState);
         token = getToken(context);
         setContentView(R.layout.activity_main);
-        queue = Volley.newRequestQueue(this);
         initializeViews();
         initiateGPS();
         gridTextView = findViewById(R.id.data_entry_grid);
@@ -378,6 +382,7 @@ public class MainActivity extends BaseActivity implements SwipeRefreshLayout.OnR
                 }
             };
         }
+
         // Check if the user has granted permission for using GPS
         if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED)
@@ -653,7 +658,7 @@ public class MainActivity extends BaseActivity implements SwipeRefreshLayout.OnR
             }
         });
 
-        materialRequest(MATERIALS_URL,getToken(context),queue,context,materialGeneralResponsePreviouslyLoaded, PREFERENCES);
+        materialRequest(MATERIALS_URL,getToken(context),queue,context,materialGeneralResponsePreviouslyLoaded);
 
     }
 

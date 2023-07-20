@@ -57,6 +57,7 @@ import edu.upenn.sas.archaeologyapp.util.Constants;
 import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.coords.UTMCoord;
 
+import static edu.upenn.sas.archaeologyapp.services.RequestQueueSingleton.getRequestQueueSingleton;
 import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.getToken;
 import static edu.upenn.sas.archaeologyapp.services.requests.ContextNumbersRequest.contextJSONArray2ContextStrArray;
 import static edu.upenn.sas.archaeologyapp.services.requests.ContextNumbersRequest.contextNumbersRequest;
@@ -121,7 +122,7 @@ public class DataEntryActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         context = this;
-        requestQueue = Volley.newRequestQueue(context);
+        requestQueue = getRequestQueueSingleton(getApplicationContext());;
         setContentView(R.layout.activity_data_entry);
         initializeViews();
         // Load persistent app data from shared preferences
@@ -422,6 +423,7 @@ public class DataEntryActivity extends BaseActivity {
         ArrayList<String> passedPaths = getIntent().getStringArrayListExtra(Constants.PARAM_KEY_IMAGES);
         if (!passedPaths.isEmpty()) {
             photoPaths = passedPaths;
+
             populateImagesWithPhotoPaths();
         }
         // Populate the material, if present
@@ -497,11 +499,13 @@ public class DataEntryActivity extends BaseActivity {
                         }
                     }
                     // Display the selected images
+
                     populateImagesWithPhotoPaths();
                 }
                 // If user captured image with camera
                 else if (requestCode == CAMERA_REQUEST) {
                     // Display the image captured (and don't clear the current photos)
+
                     populateImagesWithPhotoPaths();
                 }
             } catch (Exception ex) {

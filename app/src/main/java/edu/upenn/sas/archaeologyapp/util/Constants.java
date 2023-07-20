@@ -25,21 +25,23 @@ public class Constants
     public static final String PARAM_KEY_END_STATUS = "end_status", PARAM_KEY_BEGIN_AR_RATIO = "begin_AR_ratio";
     public static final String PARAM_KEY_END_AR_RATIO = "end_AR_ratio", DEFAULT_REACH_HOST = "192.168.43.162";
     public static final int DEFAULT_POSITION_UPDATE_INTERVAL = 2, DEFAULT_VOLLEY_TIMEOUT = 15000;
-    public static final String LOGIN_SERVER_URL = "https://j20200007.kotsf.com/asl/auth-token/";
-    public static final String TOKEN_ACCESS_TESTING_URL = "https://j20200007.kotsf.com/asl/api/area/";
+
     public static final String DEFAULT_REACH_PORT = "9001";
+    public static final String DEFAULT_SERVER_URL = "https://j20200007.kotsf.com/asl/";
+    public static final String LOGIN_SERVER_URL =  DEFAULT_SERVER_URL + "auth-token/";
+    public static final String TOKEN_ACCESS_TESTING_URL = DEFAULT_SERVER_URL + "api/area/";
 
-    public static final String TEAM_MEMBERS_URL = "https://j20200007.kotsf.com/asl/api/team/";
+    public static final String TEAM_MEMBERS_URL = DEFAULT_SERVER_URL + "api/team/";
 
-    public static final String MATERIALS_URL = "https://j20200007.kotsf.com/asl/api/find/mc/";
+    public static final String MATERIALS_URL = DEFAULT_SERVER_URL + "api/find/mc/";
 
-    public static final String INSERT_PATH_URL ="https://j20200007.kotsf.com/asl/api/path/";
+    public static final String INSERT_PATH_URL = DEFAULT_SERVER_URL + "api/path/";
 
-    public static final String INSERT_FIND_URL ="https://j20200007.kotsf.com/asl/api/find/";
+    public static final String INSERT_FIND_URL = DEFAULT_SERVER_URL + "api/find/";
 
-    public static final String INSERT_FIND_IMAGE_URL ="https://j20200007.kotsf.com/asl/api/find/<uuid>/photo";
+    public static final String INSERT_FIND_IMAGE_URL = DEFAULT_SERVER_URL + "api/find/<uuid>/photo";
 
-    public static final String CONTEXT_URL = "https://j20200007.kotsf.com/asl/api/context/<hemisphere>/<zone>/<easting>/<northing>/";
+    public static final String CONTEXT_URL =  DEFAULT_SERVER_URL + "api/context/<hemisphere>/<zone>/<easting>/<northing>/";
     private static final String DEFAULT_WEB_SERVER_URL = "http://40.117.209.97";
     public static final String PREFERENCES = "archaeological-survey-location-collector-preferences";
 

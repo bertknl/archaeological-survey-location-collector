@@ -27,7 +27,7 @@ public class MaterialRequest {
 
 
 
-    public static void materialRequest(final String URL, String token, RequestQueue queue, Context context, boolean materialGeneralResponsePreviouslyLoaded, String PREFERENCES) {
+    public static void materialRequest(final String URL, String token, RequestQueue queue, Context context, boolean materialGeneralResponsePreviouslyLoaded) {
 
         Request jsonArrayRequest = new JsonArrayRequest(URL, getRequestSuccessHandler(context), getRequestFailureHandler(context, materialGeneralResponsePreviouslyLoaded)) {
             @Override

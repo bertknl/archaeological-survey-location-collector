@@ -7,6 +7,7 @@ import edu.upenn.sas.archaeologyapp.R;
 import edu.upenn.sas.archaeologyapp.util.Constants;
 import edu.upenn.sas.archaeologyapp.util.ExtraUtils.InjectableFunc;
 
+import static edu.upenn.sas.archaeologyapp.services.RequestQueueSingleton.getRequestQueueSingleton;
 import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.getToken;
 import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.tokenHaveAccess;
 
@@ -37,7 +38,7 @@ public class SplashActivity extends BaseActivity
         InjectableFunc handleTokenWithSuccess = () -> SplashActivity.super.startActivityUsingIntent(MainActivity.class);
         InjectableFunc handleTokenWithoutSuccess = () -> SplashActivity.super.startActivityUsingIntent(LoginActivity.class);
 
-        queue = Volley.newRequestQueue(context);
+        queue = getRequestQueueSingleton(getApplicationContext());
 
         new Handler().postDelayed(new Runnable() {
             /**

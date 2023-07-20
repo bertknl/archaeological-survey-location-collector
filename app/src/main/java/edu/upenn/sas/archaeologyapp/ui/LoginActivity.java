@@ -1,6 +1,7 @@
 package edu.upenn.sas.archaeologyapp.ui;
 
 
+import static edu.upenn.sas.archaeologyapp.services.RequestQueueSingleton.getRequestQueueSingleton;
 import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.tryLogin;
 import edu.upenn.sas.archaeologyapp.util.ExtraUtils.InjectableFunc;
 
@@ -28,7 +29,7 @@ public class LoginActivity extends BaseActivity{
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
-        queue =  Volley.newRequestQueue(context);
+        queue =  getRequestQueueSingleton(getApplicationContext());;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         findViewById(R.id.loginButton).setOnClickListener(view -> {
