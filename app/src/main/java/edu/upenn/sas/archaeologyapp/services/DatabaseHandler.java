@@ -5,8 +5,12 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import java.util.ArrayList;
+import java.util.HashSet;
+
 import edu.upenn.sas.archaeologyapp.models.DataEntryElement;
 import edu.upenn.sas.archaeologyapp.models.PathElement;
+import edu.upenn.sas.archaeologyapp.util.ExtraUtils.ImagePathBucketIDPair;
+
 /**
  * Database helper class to create, read and write data
  * Created by eanvith on 16/01/17.
@@ -19,7 +23,7 @@ public class DatabaseHandler extends SQLiteOpenHelper
     private static final String FINDS_TABLE_NAME = "bucket", IMAGE_TABLE_NAME = "images";
     private static final String PATHS_TABLE_NAME = "paths";
     // Table Columns names
-    private static final String KEY_ID = "bucket_id", KEY_LATITUDE = "latitude", KEY_LONGITUDE = "longitude";
+    private static final String KEY_ID = "bucket_id", KEY_FIND_UUID = "find_uuid",  KEY_LATITUDE = "latitude", KEY_LONGITUDE = "longitude";
     private static final String KEY_ALTITUDE = "altitude", KEY_STATUS = "status", KEY_AR_RATIO = "AR_ratio";
     private static final String KEY_MATERIAL = "material",KEY_CONTEXT_NUMBER = "context_number", KEY_COMMENT = "comment";
 
@@ -35,7 +39,7 @@ public class DatabaseHandler extends SQLiteOpenHelper
     private static final String KEY_END_EASTING = "end_easting", KEY_END_NORTHING = "end_northing";
     private static final String KEY_BEGIN_TIME = "start_time", KEY_END_TIME = "stop_time", KEY_BEGIN_STATUS = "begin_status";
     private static final String KEY_END_STATUS = "end_status", KEY_BEGIN_AR_RATIO = "begin_AR_ratio";
-    private static final String KEY_END_AR_RATIO = "end_AR_ratio", KEY_IMAGE_ID = "image_name", KEY_IMAGE_BUCKET = "image_bucket";
+    private static final String KEY_END_AR_RATIO = "end_AR_ratio", KEY_IMAGE_ID = "image_name", KEY_IMAGE_BUCKET = "image_bucket", KEY_IMAGE_SYNCED = "image_synced";
     /**
      * Constructor
      * @param context The current app context
@@ -52,14 +56,14 @@ public class DatabaseHandler extends SQLiteOpenHelper
     @Override
     public void onCreate(SQLiteDatabase db)
     {
-        String CREATE_BUCKET_TABLE = "CREATE TABLE " + FINDS_TABLE_NAME + "(" + KEY_ID + " TEXT PRIMARY KEY,"
+        String CREATE_BUCKET_TABLE = "CREATE TABLE " + FINDS_TABLE_NAME + "(" + KEY_ID + " TEXT PRIMARY KEY," + KEY_FIND_UUID + " TEXT,"
                 + KEY_LATITUDE + " FLOAT," + KEY_LONGITUDE + " FLOAT," + KEY_ALTITUDE + " FLOAT,"
                 + KEY_STATUS + " TEXT," + KEY_AR_RATIO + " FLOAT," + KEY_MATERIAL + " TEXT," + KEY_CONTEXT_NUMBER + " TEXT,"
                 + KEY_COMMENT + " TEXT," + KEY_UPDATED_TIMESTAMP + " INTEGER," + KEY_CREATED_TIMESTAMP + " INTEGER,"
                 + KEY_ZONE + " INTEGER," + KEY_HEMISPHERE + " TEXT," + KEY_NORTHING + " INTEGER,"
                 + KEY_PRECISE_NORTHING + " FLOAT," + KEY_EASTING + " INTEGER," + KEY_PRECISE_EASTING + " FLOAT,"
                 + KEY_SAMPLE + " INTEGER," + KEY_BEEN_SYNCED + " INTEGER)";
-        String CREATE_IMAGE_TABLE = "CREATE TABLE " + IMAGE_TABLE_NAME + "(" + KEY_IMAGE_ID + " TEXT PRIMARY KEY,"
+        String CREATE_IMAGE_TABLE = "CREATE TABLE " + IMAGE_TABLE_NAME + "(" + KEY_IMAGE_ID + " TEXT PRIMARY KEY," + KEY_IMAGE_SYNCED + " INTEGER,"
                 + KEY_IMAGE_BUCKET + " TEXT)";
         String CREATE_PATHS_TABLE = "CREATE TABLE " + PATHS_TABLE_NAME + "(" + KEY_TEAM_MEMBER + " TEXT,"
                 + KEY_BEGIN_LATITUDE + " FLOAT," + KEY_BEGIN_LONGITUDE + " FLOAT," + KEY_BEGIN_ALTITUDE + " FLOAT,"
@@ -97,12 +101,14 @@ public class DatabaseHandler extends SQLiteOpenHelper
      */
     public void addFindsRows(DataEntryElement[] entry)
     {
+
         SQLiteDatabase db = this.getWritableDatabase();
         try
         {
             db.beginTransaction();
             for (DataEntryElement e: entry)
             {
+
                 // The values to be written in a row
                 ContentValues values = new ContentValues();
                 values.put(KEY_LATITUDE, e.getLatitude());
@@ -122,6 +128,7 @@ public class DatabaseHandler extends SQLiteOpenHelper
                 values.put(KEY_PRECISE_EASTING, e.getPreciseEasting());
                 values.put(KEY_SAMPLE, e.getSample());
                 values.put(KEY_BEEN_SYNCED, e.getBeenSynced() ? 1 : 0);
+                values.put(KEY_FIND_UUID, e.getFindUUID());
                 // Try to make an update call
                 int rowsAffected = db.update(FINDS_TABLE_NAME, values, KEY_ID + " ='" + e.getID()+"'", null);
                 // If update call fails, rowsAffected will be 0. If not, it means the row was updated
@@ -183,6 +190,7 @@ public class DatabaseHandler extends SQLiteOpenHelper
             values.put(KEY_EASTING, entry.getEasting());
             values.put(KEY_PRECISE_EASTING, entry.getPreciseEasting());
             values.put(KEY_SAMPLE, entry.getSample());
+            values.put(KEY_FIND_UUID, entry.getFindUUID());
             // Set beenSynced to true
             values.put(KEY_BEEN_SYNCED, 1);
             // Make an update call
@@ -344,7 +352,10 @@ public class DatabaseHandler extends SQLiteOpenHelper
                             cursor.getInt(cursor.getColumnIndex(KEY_EASTING)),
                             cursor.getDouble(cursor.getColumnIndex(KEY_PRECISE_EASTING)),
                             cursor.getInt(cursor.getColumnIndex(KEY_SAMPLE)),
-                            cursor.getInt(cursor.getColumnIndex(KEY_BEEN_SYNCED))>0);
+                            cursor.getInt(cursor.getColumnIndex(KEY_BEEN_SYNCED))>0,
+                            String.valueOf(cursor.getInt(cursor.getColumnIndex(KEY_FIND_UUID)))
+
+                    );
                     dataEntryElements.add(entry);
                 }
                 while (cursor.moveToNext());
@@ -430,10 +441,12 @@ public class DatabaseHandler extends SQLiteOpenHelper
             db.beginTransaction();
             for (String imagePath: imagePaths)
             {
+
                 // The values to be written in a row
                 ContentValues values = new ContentValues();
                 values.put(KEY_IMAGE_ID, imagePath);
                 values.put(KEY_IMAGE_BUCKET, entryID);
+                values.put(KEY_IMAGE_SYNCED, 0);
                 db.insert(IMAGE_TABLE_NAME, null, values);
             }
             db.setTransactionSuccessful();
@@ -470,6 +483,57 @@ public class DatabaseHandler extends SQLiteOpenHelper
                 cursor.close();
             }
         }
+    }
+
+
+    public HashSet<ImagePathBucketIDPair> getAllImagesUnsynched(){
+        //We return all images from the table if they are not synced.
+        //It is key to make sure that at this step, we do not face the problem of
+        //GetImage Unsynced -> then image is finished uploading, making it synched -> making the table not banning this entry-> sending the request again
+        //This problem won't happen if we never reenable entries that are successful. So only when we miss sending an image do we allow reuploading.
+        String selectQuery = "SELECT  * FROM " + IMAGE_TABLE_NAME;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = null;
+        HashSet<ImagePathBucketIDPair> ImagePathBucketIDPairs = new HashSet<ImagePathBucketIDPair>();
+        try
+        {
+
+            cursor = db.rawQuery(selectQuery, null);
+
+            if (cursor.moveToFirst())
+            {
+                do
+                {
+
+                    //Here we need two things
+                    //Condition 1: Image must be unsynced. So image_synched == 0
+                    //If this condition is true.
+                    //We add the image_path, which locates the image, and the image_bucket that locates which find the image is with.
+                    int image_synched =  cursor.getInt(cursor.getColumnIndex(KEY_IMAGE_SYNCED));
+                    if (image_synched == 0){
+                        ImagePathBucketIDPair temp = new ImagePathBucketIDPair(cursor.getString(cursor.getColumnIndex(KEY_IMAGE_ID)), cursor.getString(cursor.getColumnIndex(KEY_IMAGE_BUCKET)));
+                        ImagePathBucketIDPairs.add(temp);
+
+                    }
+
+                }
+                while (cursor.moveToNext());
+            }
+        }
+        catch (Exception e)
+        {
+
+            e.printStackTrace();
+        }
+        finally
+        {
+            if (cursor != null)
+            {
+                cursor.close();
+            }
+            db.close();
+        }
+        return ImagePathBucketIDPairs;
     }
 
     /**

@@ -52,6 +52,24 @@ public class InsertFindRequest {
         queue.add(jsonArrayRequest);
     }
 
+    public static void insertFindRequest(String URL, JSONObject parametersObject , String token, RequestQueue queue, Context context, Response.Listener<JSONObject> Sucesslistener) {
+
+        Request jsonArrayRequest = new JsonObjectRequest(Request.Method.POST, URL, parametersObject,Sucesslistener
+                ,getRequestFailureHandler(context) ) {
+            @Override
+            public Map<String, String> getHeaders() {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("Authorization", "Token " + token);
+                return params;
+            }
+        };
+        jsonArrayRequest.setRetryPolicy(new DefaultRetryPolicy(DEFAULT_VOLLEY_TIMEOUT,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        queue.add(jsonArrayRequest);
+    }
+
+
+
     private static Response.Listener<JSONObject> getRequestSuccessHandler(Context context) {
         Response.Listener<JSONObject> successHandler = response -> {
             System.out.println("Success");

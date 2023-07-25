@@ -7,12 +7,11 @@ import edu.upenn.sas.archaeologyapp.R;
 import edu.upenn.sas.archaeologyapp.util.Constants;
 import edu.upenn.sas.archaeologyapp.util.ExtraUtils.InjectableFunc;
 
-import static edu.upenn.sas.archaeologyapp.services.RequestQueueSingleton.getRequestQueueSingleton;
+import static edu.upenn.sas.archaeologyapp.services.StaticSingletons.getRequestQueueSingleton;
 import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.getToken;
 import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.tokenHaveAccess;
 
 import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.Volley;
 
 /**
  * The splash activity

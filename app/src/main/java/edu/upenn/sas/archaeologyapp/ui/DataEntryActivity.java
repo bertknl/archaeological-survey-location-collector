@@ -46,7 +46,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 import edu.upenn.sas.archaeologyapp.services.LocationCollector;
@@ -57,7 +56,7 @@ import edu.upenn.sas.archaeologyapp.util.Constants;
 import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.coords.UTMCoord;
 
-import static edu.upenn.sas.archaeologyapp.services.RequestQueueSingleton.getRequestQueueSingleton;
+import static edu.upenn.sas.archaeologyapp.services.StaticSingletons.getRequestQueueSingleton;
 import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.getToken;
 import static edu.upenn.sas.archaeologyapp.services.requests.ContextNumbersRequest.contextJSONArray2ContextStrArray;
 import static edu.upenn.sas.archaeologyapp.services.requests.ContextNumbersRequest.contextNumbersRequest;
@@ -67,7 +66,6 @@ import static edu.upenn.sas.archaeologyapp.util.Constants.DEFAULT_REACH_HOST;
 import static edu.upenn.sas.archaeologyapp.util.Constants.DEFAULT_REACH_PORT;
 
 import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.Volley;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -111,6 +109,7 @@ public class DataEntryActivity extends BaseActivity {
 
     private Context context;
 
+    private String find_uuid;
     private RequestQueue requestQueue;
 
     /**
@@ -192,6 +191,8 @@ public class DataEntryActivity extends BaseActivity {
      */
     private void initializeViews() {
         // Set the toolbar
+
+
         Toolbar toolbar = findViewById(R.id.toolbar_data_entry);
         setSupportActionBar(toolbar);
         // Configure up button to go back to previous activity
@@ -205,6 +206,7 @@ public class DataEntryActivity extends BaseActivity {
         northingTextView = findViewById(R.id.data_entry_northing);
         eastingTextView = findViewById(R.id.data_entry_easting);
         sampleTextView = findViewById(R.id.data_entry_sample);
+
         GPSConnectionTextView = findViewById(R.id.GPSConnection);
         reachConnectionTextView = findViewById(R.id.reachConnection);
         GPSConnectionTextView.setText(String.format(getResources().getString(R.string.GPSConnection), getString(R.string.blank_assignment)));
@@ -340,11 +342,20 @@ public class DataEntryActivity extends BaseActivity {
         materialsDropdown.setAdapter(materialsAdapter);
         materialsDropdown.setSelection(0);
 
-
-
-        setUpContextNumberSelect(new String[]{"1 : new"});
-        prePopulateFields();
-
+        //prePopulateFields();
+        contextNumbersRequest(getContextURL("N", 38, 478130,4419430), getToken(context), requestQueue, context, response->{
+            String [] previousContexts = contextJSONArray2ContextStrArray(response);
+            int max = 0;
+            for (int i = 0; i < previousContexts.length; i++){
+                int current_context_value = Integer.valueOf(previousContexts[i]);
+                if (current_context_value > max){
+                    max = current_context_value;
+                }
+            }
+            String [] extendedContextOptions =  Arrays.copyOf(previousContexts, previousContexts.length + 1);
+            extendedContextOptions[previousContexts.length] = (max + 1) +" : new";
+            setUpContextNumberSelect(extendedContextOptions);
+        });
 
     }
 
@@ -389,6 +400,8 @@ public class DataEntryActivity extends BaseActivity {
             return;
         }
         // Populate the UTM position details, if present
+        find_uuid = getIntent().getStringExtra(Constants.PARAM_FIND_UUID);
+
         zone = getIntent().getIntExtra(Constants.PARAM_KEY_ZONE, Integer.MIN_VALUE);
         hemisphere = getIntent().getStringExtra(Constants.PARAM_KEY_HEMISPHERE);
         northing = getIntent().getIntExtra(Constants.PARAM_KEY_NORTHING, Integer.MIN_VALUE);
@@ -428,6 +441,7 @@ public class DataEntryActivity extends BaseActivity {
         }
         // Populate the material, if present
         String passedMaterial = getIntent().getStringExtra(Constants.PARAM_KEY_MATERIAL);
+        System.out.println(passedMaterial);
         if (passedMaterial != null) {
             // Search the dropdown for a matching material, and set to that if found
             for (int i = 0; i < materialsDropdown.getCount(); i++) {
@@ -438,7 +452,10 @@ public class DataEntryActivity extends BaseActivity {
         }
 
         // Populate the material, if present
+
+
         String passedContextNumber = getIntent().getStringExtra(Constants.PARAM_KEY_CONTEXT_NUMBER);
+
         if (passedContextNumber != null) {
             // Search the dropdown for a matching context number, and set to that if found
             for (int i = 0; i < contextNumberDropdown.getCount(); i++) {
@@ -631,7 +648,7 @@ public class DataEntryActivity extends BaseActivity {
         }
 
         prePopulateFields();
-        return ;
+
     }
     /**
      * Set the UTM location
@@ -964,10 +981,9 @@ public class DataEntryActivity extends BaseActivity {
         String material = materialsDropdown.getSelectedItem().toString();
         String contextNumber = contextNumberDropdown.getSelectedItem().toString();
         String comment = commentsEditText.getText().toString();
-
         return new DataEntryElement(id, latitude, longitude, altitude, status, ARRatio, photoPaths,
                 material, contextNumber,comment, timestamp, timestamp, zone, hemisphere,
-                northing, preciseNorthing, easting, preciseEasting, sample, false);
+                northing, preciseNorthing, easting, preciseEasting, sample, false , find_uuid);
     }
 
     /**
@@ -978,6 +994,7 @@ public class DataEntryActivity extends BaseActivity {
         list[0] = getElement();
         // Save the dataEntryElement to DB
         DatabaseHandler databaseHandler = new DatabaseHandler(this);
+
         databaseHandler.addFindsRows(list);
     }
 

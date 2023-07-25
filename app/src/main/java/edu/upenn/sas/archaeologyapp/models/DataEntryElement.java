@@ -17,6 +17,8 @@ public class DataEntryElement
     private final long CREATED_TIME_STAMP, UPDATE_TIME_STAMP;
     // A boolean for whether or not this item has been uploaded/synced
     private final boolean BEEN_SYNCED;
+
+    private String FIND_UUID;
     private final Integer NORTHING, EASTING, ZONE, SAMPLE;
     /**
      * Constructor
@@ -44,7 +46,7 @@ public class DataEntryElement
                             Double ARRatio, ArrayList<String> imagePaths, String material, String contextNumber, String comments,
                             long createdTimestamp, long updateTimestamp, Integer zone, String hemisphere,
                             Integer northing, Double preciseNorthing, Integer easting, Double preciseEasting,
-                            Integer sample, boolean beenSynced)
+                            Integer sample, boolean beenSynced, String find_uuid)
     {
         this.ID = ID;
         this.LATITUDE = latitude;
@@ -66,6 +68,7 @@ public class DataEntryElement
         this.BEEN_SYNCED = beenSynced;
         this.PRECISE_EASTING = preciseEasting;
         this.PRECISE_NORTHING = preciseNorthing;
+        this.FIND_UUID = find_uuid;
     }
 
     /**
@@ -241,5 +244,14 @@ public class DataEntryElement
     public boolean getBeenSynced()
     {
         return BEEN_SYNCED;
+    }
+
+
+    public String getFindUUID(){
+        return FIND_UUID;
+    }
+
+    public void setFindUUID(String UUID){
+        FIND_UUID = UUID;
     }
 }

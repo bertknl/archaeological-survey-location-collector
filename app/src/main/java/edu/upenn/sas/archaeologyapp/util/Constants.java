@@ -12,9 +12,9 @@ public class Constants
     public static final String PARAM_KEY_LATITUDE = "latitude", PARAM_KEY_PRECISE_EASTING = "precise easting";
     public static final String PARAM_KEY_LONGITUDE = "longitude", PARAM_KEY_PRECISE_NORTHING = "precise northing";
     public static final String PARAM_KEY_ALTITUDE = "altitude", PARAM_KEY_STATUS = "status", PARAM_KEY_AR_RATIO = "AR_ratio";
-    public static final String PARAM_KEY_MATERIAL = "material", PARAM_KEY_CONTEXT_NUMBER = "material", PARAM_KEY_IMAGES = "images", PARAM_KEY_COMMENTS = "comments";
+    public static final String PARAM_KEY_MATERIAL = "material", PARAM_KEY_CONTEXT_NUMBER = "context_number", PARAM_KEY_IMAGES = "images", PARAM_KEY_COMMENTS = "comments";
 
-
+    public static final String PARAM_FIND_UUID = "find_uuid";
     public static final String PARAM_KEY_TEAM_MEMBER = "team_member", PARAM_KEY_BEGIN_LATITUDE = "begin_latitude";
     public static final String PARAM_KEY_END_LATITUDE = "end_latitude", PARAM_KEY_BEGIN_LONGITUDE = "begin_longitude";
     public static final String PARAM_KEY_END_LONGITUDE = "end_longitude", PARAM_KEY_BEGIN_ALTITUDE = "begin_altitude";

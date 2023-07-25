@@ -32,6 +32,22 @@ public class ExtraUtils {
         editor.commit();
     }
 
+    public static class ImagePathBucketIDPair{
+        private String imagePath;
+        private String bucketID;
+        public ImagePathBucketIDPair(String imagePath,  String bucketID){
+            this.imagePath = imagePath;
+            this.bucketID = bucketID;
+        }
+
+        public String getImagePath(){
+            return this.imagePath;
+        }
+
+        public String getBucketID(){
+            return this.bucketID;
+        }
+    }
 
 
 

@@ -24,7 +24,6 @@ import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.Volley;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
@@ -46,12 +45,11 @@ import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.coords.UTMCoord;
 import static edu.upenn.sas.archaeologyapp.R.id.map;
 
-import static edu.upenn.sas.archaeologyapp.services.RequestQueueSingleton.getRequestQueueSingleton;
+import static edu.upenn.sas.archaeologyapp.services.StaticSingletons.getRequestQueueSingleton;
 import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.getToken;
 import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.setToken;
 
 import static edu.upenn.sas.archaeologyapp.services.VolleyStringWrapper.makeVolleyStringObjectRequest;
-import static edu.upenn.sas.archaeologyapp.services.requests.InsertFindImageRequest.insertFindImageRequest;
 import static edu.upenn.sas.archaeologyapp.services.requests.MaterialRequest.materialRequest;
 import static edu.upenn.sas.archaeologyapp.util.Constants.MATERIALS_URL;
 import static edu.upenn.sas.archaeologyapp.util.Constants.globalWebServerURL;
@@ -284,9 +282,11 @@ public class MainActivity extends BaseActivity implements SwipeRefreshLayout.OnR
                     paramsToPass.putDouble(Constants.PARAM_KEY_AR_RATIO, dataEntryElement.getARRatio());
                     paramsToPass.putStringArrayList(Constants.PARAM_KEY_IMAGES, dataEntryElement.getImagePaths());
                     paramsToPass.putString(Constants.PARAM_KEY_MATERIAL, dataEntryElement.getMaterial());
-                    paramsToPass.putString(Constants.PARAM_KEY_CONTEXT_NUMBER, dataEntryElement.getMaterial());
+                    paramsToPass.putString(Constants.PARAM_KEY_CONTEXT_NUMBER, dataEntryElement.getContextNumber());
 
                     paramsToPass.putString(Constants.PARAM_KEY_COMMENTS, dataEntryElement.getComments());
+                    paramsToPass.putString(Constants.PARAM_FIND_UUID, dataEntryElement.getFindUUID());
+
                     startActivityUsingIntent(DataEntryActivity.class, false, paramsToPass);
                 }
                 else if (displayMode == PATHS_MODE)

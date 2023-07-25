@@ -1,7 +1,7 @@
 package edu.upenn.sas.archaeologyapp.ui;
 
 
-import static edu.upenn.sas.archaeologyapp.services.RequestQueueSingleton.getRequestQueueSingleton;
+import static edu.upenn.sas.archaeologyapp.services.StaticSingletons.getRequestQueueSingleton;
 import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.tryLogin;
 import edu.upenn.sas.archaeologyapp.util.ExtraUtils.InjectableFunc;
 
@@ -11,7 +11,6 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.Volley;
 
 import edu.upenn.sas.archaeologyapp.R;
 

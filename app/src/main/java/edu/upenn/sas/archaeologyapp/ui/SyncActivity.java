@@ -2,7 +2,6 @@ package edu.upenn.sas.archaeologyapp.ui;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
@@ -19,7 +18,6 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -28,11 +26,10 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import edu.upenn.sas.archaeologyapp.R;
@@ -40,8 +37,11 @@ import edu.upenn.sas.archaeologyapp.models.PathElement;
 import edu.upenn.sas.archaeologyapp.models.StringObjectResponseWrapper;
 import edu.upenn.sas.archaeologyapp.models.DataEntryElement;
 import edu.upenn.sas.archaeologyapp.services.DatabaseHandler;
+import edu.upenn.sas.archaeologyapp.util.ExtraUtils;
+import edu.upenn.sas.archaeologyapp.util.ExtraUtils.ImagePathBucketIDPair;
 
-import static edu.upenn.sas.archaeologyapp.services.RequestQueueSingleton.getRequestQueueSingleton;
+import static edu.upenn.sas.archaeologyapp.services.StaticSingletons.getImagesToIgnore;
+import static edu.upenn.sas.archaeologyapp.services.StaticSingletons.getRequestQueueSingleton;
 import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.getToken;
 import static edu.upenn.sas.archaeologyapp.services.VolleyStringWrapper.makeVolleyStringObjectRequest;
 import static edu.upenn.sas.archaeologyapp.services.requests.InsertFindImageRequest.insertFindImageRequest;
@@ -50,6 +50,7 @@ import static edu.upenn.sas.archaeologyapp.services.requests.InsertFindRequest.i
 import static edu.upenn.sas.archaeologyapp.util.Constants.INSERT_FIND_URL;
 import static edu.upenn.sas.archaeologyapp.util.Constants.globalWebServerURL;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -57,55 +58,6 @@ import org.json.JSONObject;
  * @author eanvith, Colin Roberts, Christopher Besser.
  */
 
-
-
-/*
-The previous code of insertion find request has two main problems.
-1. It tries to exhaust all requests one by one using recursion inside an async method.  It looks cumbersome. Also, if in this chain of async method calls, there is one
-error occuring because of JSON volley, it fails completely because it only call uploadFinds() with its success handler method but not with its error handler method.
-
-2. When the application successfully to launch a insert_find request, it immediately marks in the database and in the memory that it has finished the request. There is not any
-mechanism to ensure the insert_find_images requests for all the images associated with this insert_find has been successfully uploaded.
- */
-
-/*
-* Notes on the pattern.
-*
-* I cannot find an ideal design software pattern for our problem. So I will try to create one for this application.
-*
-* Problem: You have many data objects, each of which has many 0 or many many images associated with it. You are given two restful apis.
-*   API one: parameters: JSONObject, return: an unique id associated with this object on the server
-*   API two: parameters: ImageBinary, id(int), return: void
-*
-* Abstract:
-* We have two types of requests in total. As a result, we should have two different queues to store them.
-* Queue insertion_findQueue;
-* Queue find_image_insertionQueue;
-*
-* Because of Volley is async, our code will be more complicated.
-* In the original code, they achieve uploading a list of requests using volley by nested recursion.
-*
-* This wastes the potential of Asynchronous operations. Why no call all the requests all at once when we can?
-*
-* First of all we need to create a map, this map
-*
-*
-* for (insertion_request_object in insertion_request_objects){
-*      call_request(insertion_request_object, success_responseHandller(){
-*              id = response.id;
-*
-*       }, failure_responseHandler(){
-*
-*       }
-*   )
-*
-*
-* }
-*
-*
-*
-*
-* */
 
 
 public class SyncActivity extends AppCompatActivity
@@ -127,6 +79,8 @@ public class SyncActivity extends AppCompatActivity
     ArrayList<PathElement> pathsToUpload;
     // A database helper class object that enables fetching of records from the local database
     DatabaseHandler databaseHandler;
+
+    HashSet<ImagePathBucketIDPair> imagesToIgnore;
     // A request queue to handle python requests
     RequestQueue queue;
     /**
@@ -138,6 +92,7 @@ public class SyncActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         context = this;
+        imagesToIgnore = getImagesToIgnore();
         setContentView(R.layout.activity_sync);
         queue = getRequestQueueSingleton(getApplicationContext());
         // Initialize the database helper class object, and read in the records from the local database
@@ -170,43 +125,90 @@ public class SyncActivity extends AppCompatActivity
                 {
                     Toast.makeText(SyncActivity.this, "There are no records to sync.", Toast.LENGTH_SHORT).show();
                 }
-                // Disable the sync button while the sync is in progress
-                syncButton.setEnabled(false);
-                //String[] materialCategoryPairs =getMaterialCategoryOptions(context);
+//                try {
+//                    newUploadFinds();
+//                } catch (IOException e) {
+//                    throw new RuntimeException(e);
+//                }
+//                // Disable the sync button while the sync is in progress
+             //   syncButton.setEnabled(false);
+               // qUploadFinds();
+                System.out.println(1);
 
-                //JSONObject insertFindRequestParametersObject = createInsertMaterialParametersObject(context, "N", 38, 478130,4419430,1, "pottery", "rim", "Bedfgdfgrt test");
-                //insertFindRequest(INSERT_FIND_URL, insertFindRequestParametersObject,getToken(context), queue,context);
-
-
+                System.out.println(2);
                 // Start uploading unsynced items
                 //uploadFinds();
                 // Start uploading unsynced paths
                 //uploadPaths();
-//                for(int i = 0 ; i< totalItems; i++) {
-//                    uploadFind(i);
-//                }
-//                String url = "https://j20200007.kotsf.com/asl/api/find/15b78e84-2136-43d4-aaea-a292605bcca5/photo/";
-//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//                    System.out.println(Base64.getDecoder().decode(imageBase64.get(i)));
-//                }
+
             }
         });
     }
 
 
-
-
-    private void newUploadFinds(int max){
-
-
-        for(int i = uploadIndex; i < totalItems; i++){
-            //Don't think this complicatedly
+    private void qUploadFinds(){
+        for(int i = uploadIndex; i < totalItems; i++) {
             uploadFind(i);
         }
     }
 
-    private void uploadFind(int findIndex){
-        final DataEntryElement find = elementsToUpload.get((findIndex));
+
+
+
+    private void newUploadFinds( ) throws IOException {
+
+        Map <JSONObject, String> insertFindIDPairs = new HashMap<JSONObject, String>();
+        Map< JSONObject, ArrayList<byte[]> > insertFindImagePairs = new HashMap<JSONObject, ArrayList<byte[]>>() ;  //Only got sent when it has an id.
+
+
+        for(int i = uploadIndex; i < totalItems; i++) {
+            //Don't think this complicatedly
+            final DataEntryElement find = (elementsToUpload.get(i));
+            String utm_hemisphere = find.getHemisphere();
+            int utm_zone = find.getZone();
+            int area_utm_easting_meters = find.getEasting();
+            int area_utm_northing_meters = find.getNorthing();
+            String context_number_string_stripped = (find.getContextNumber()).replaceAll("[^\\d.]", "");
+            ;
+            int context_number = Integer.parseInt(context_number_string_stripped);
+            String material_category_pair = find.getMaterial();
+            String material = material_category_pair.split(" : ")[0].trim();
+            String category = material_category_pair.split(" : ")[1].trim();
+            String directory_notes = find.getComments();
+            JSONObject insertFindRequestParametersObject = createInsertMaterialParametersObject(context, utm_hemisphere, utm_zone, area_utm_easting_meters, area_utm_northing_meters, context_number, material, category, directory_notes);
+            insertFindIDPairs.put(insertFindRequestParametersObject, null);
+            ArrayList<String> finds = find.getImagePaths();
+            ArrayList<byte[]> allPhotosOfAnFind = new ArrayList<byte[]>();
+            for (int j = 0; j < finds.size(); j++) {
+
+                File fi = new File(finds.get(j));
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                    byte[] fileContent = Files.readAllBytes(fi.toPath());
+                    allPhotosOfAnFind.add(fileContent);
+                }
+            }
+            insertFindImagePairs.put(insertFindRequestParametersObject,allPhotosOfAnFind);
+        }
+
+
+
+    }
+
+    private Response.Listener<JSONObject> getRequestSuccessHandler(Context context, DataEntryElement find) {
+        Response.Listener<JSONObject> successHandler = response -> {
+            try {
+                find.setFindUUID(response.getString("id"));
+                System.out.println("We just set the FINDUUID into the find in the database!" + response.getString("id"));
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+
+            databaseHandler.setFindSynced(find);
+        };
+        return successHandler;
+    }
+    private void uploadFind(int index){
+        final DataEntryElement find = elementsToUpload.get(index);
         String utm_hemisphere = find.getHemisphere();
         int utm_zone =  find.getZone();
         int area_utm_easting_meters =  find.getEasting() ;
@@ -218,26 +220,52 @@ public class SyncActivity extends AppCompatActivity
         String material = material_category_pair.split(" : ")[0].trim();
         String category = material_category_pair.split(" : ")[1].trim();
         String directory_notes = find.getComments();
-
-        ArrayList<String> imagePaths = find.getImagePaths();
-        for (int i = 0; i < imagePaths.size(); i++){
-            File fi = new File(imagePaths.get(0));
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                try {
-                    byte[] fileContent = Files.readAllBytes(fi.toPath());
-
-                    String url = "https://j20200007.kotsf.com/asl/api/find/15b78e84-2136-43d4-aaea-a292605bcca5/photo/";
-                    insertFindImageRequest(context, getToken(context), url , fileContent, queue);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-
         JSONObject insertFindRequestParametersObject = createInsertMaterialParametersObject(context, utm_hemisphere, utm_zone, area_utm_easting_meters,area_utm_northing_meters,context_number, material, category, directory_notes);
-        insertFindRequest(INSERT_FIND_URL, insertFindRequestParametersObject,getToken(context), queue,context);
+        insertFindRequest(INSERT_FIND_URL, insertFindRequestParametersObject,getToken(context), queue,context, getRequestSuccessHandler(context, find));
+
+//        ArrayList<String> imagePaths = find.getImagePaths();
+//        for (int i = 0; i < imagePaths.size(); i++){
+//            File fi = new File(imagePaths.get(0));
+//            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+//                try {
+//                    byte[] fileContent = Files.readAllBytes(fi.toPath());
+//
+//                    String url = "https://j20200007.kotsf.com/asl/api/find/15b78e84-2136-43d4-aaea-a292605bcca5/photo/";
+//                    insertFindImageRequest(context, getToken(context), url , fileContent, queue);
+//                } catch (IOException e) {
+//                    throw new RuntimeException(e);
+//                }
+//            }
+
 
     }
+
+
+    private void filterFinishedOrProcessingImages(HashSet<ImagePathBucketIDPair> ImagePathBucketIDPairs, HashSet<ImagePathBucketIDPair> imagesToIgnore){
+
+        ImagePathBucketIDPairs.removeAll(imagesToIgnore);
+    }
+
+
+    private void uploadImages(){
+
+
+        //1. Go through all images not synced
+        HashSet<ImagePathBucketIDPair> ImagePathBucketIDPairs =  databaseHandler.getAllImagesUnsynched();
+        filterFinishedOrProcessingImages(ImagePathBucketIDPairs, imagesToIgnore);
+
+        //2. Filter out the images that are in the table
+        //3. Filiter image requests based on uuid and been_synched in table Bucket.
+        //4. For loop do each request,
+                //Before response: diable in the current image being uploaded table
+                //If Response is good, Then set image as synced
+                //If response is error, we do nothing(Maybe just show an error)
+                //Only reenable the insertion when the request failed.
+        //
+    }
+
+
+
 
 
     /**
@@ -339,44 +367,44 @@ public class SyncActivity extends AppCompatActivity
                         String currentIndex = String.valueOf(i + 1);
 
                         //insertFindImageRequest(context, getToken(context), url , new byte[]{}, queue);
-//                        StringRequest stringRequest = new StringRequest(Request.Method.POST, globalWebServerURL + "/insert_find_image",
-//                                new Response.Listener<String>() {
-//                                    @Override
-//                                    public void onResponse(String response) {
-//                                        Log.d("Res++", response);
-//                                        logText.setText(logText.getText().toString() + response);
-//                                        if (!response.contains("Error")) {
-//                                            //count image success
-//                                            counter.getAndAdd(1);
-//                                            progressBar.setProgress( (int) ((double)counter.get()/(totalImages) * 100));
-//                                        } else {
-//                                            Toast.makeText(getApplicationContext(), "Upload failed: " + response,
-//                                                    Toast.LENGTH_SHORT).show();
-//                                        }
-//                                    }
-//                                }, new Response.ErrorListener() {
-//                            @Override
-//                            public void onErrorResponse(VolleyError error) {
-//
-//                            }
-//                        })
-//                        {
-//                            @Override
-//                            protected Map<String, String> getParams() throws AuthFailureError {
-//                                Map<String, String> params = new HashMap<>();
-//                                params.put("zone", zone);
-//                                params.put("hemisphere", hemisphere);
-//                                params.put("contextEasting", contextEasting);
-//                                params.put("contextNorthing", contextNorthing);
-//                                params.put("find", sample);
-//                                params.put("imageName", currentName);
-//                                params.put("imageBase64", currentImageBase64);
-//                                params.put("indexNum", currentIndex);
-//                                Log.d("cool", String.valueOf(currentImageBase64.length()));
-//                                return params;
-//                            }
-//                        }; //end of defining current POST request
-//                        queue.add(stringRequest);
+                        StringRequest stringRequest = new StringRequest(Request.Method.POST, globalWebServerURL + "/insert_find_image",
+                                new Response.Listener<String>() {
+                                    @Override
+                                    public void onResponse(String response) {
+                                        Log.d("Res++", response);
+                                        logText.setText(logText.getText().toString() + response);
+                                        if (!response.contains("Error")) {
+                                            //count image success
+                                            counter.getAndAdd(1);
+                                            progressBar.setProgress( (int) ((double)counter.get()/(totalImages) * 100));
+                                        } else {
+                                            Toast.makeText(getApplicationContext(), "Upload failed: " + response,
+                                                    Toast.LENGTH_SHORT).show();
+                                        }
+                                    }
+                                }, new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+
+                            }
+                        })
+                        {
+                            @Override
+                            protected Map<String, String> getParams() throws AuthFailureError {
+                                Map<String, String> params = new HashMap<>();
+                                params.put("zone", zone);
+                                params.put("hemisphere", hemisphere);
+                                params.put("contextEasting", contextEasting);
+                                params.put("contextNorthing", contextNorthing);
+                                params.put("find", sample);
+                                params.put("imageName", currentName);
+                                params.put("imageBase64", currentImageBase64);
+                                params.put("indexNum", currentIndex);
+                                Log.d("cool", String.valueOf(currentImageBase64.length()));
+                                return params;
+                            }
+                        }; //end of defining current POST request
+                        queue.add(stringRequest);
                     }//end of for loop
                    // progressBar.setProgress( (int) ((double)(uploadIndex)/(totalItems) * 100));
                     uploadFinds();
@@ -389,9 +417,10 @@ public class SyncActivity extends AppCompatActivity
                 @Override
                 public void errorMethod(VolleyError error)
                 {
+
                     Toast.makeText(getApplicationContext(), "Upload failed (Communication error): " + error,
                             Toast.LENGTH_SHORT).show();
-                    error.printStackTrace();
+
                 }
             });
 

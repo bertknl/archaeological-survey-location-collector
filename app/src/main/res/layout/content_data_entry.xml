@@ -223,7 +223,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="166dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="15dp"
             android:background="@color/colorTintedBackground"
             android:orientation="vertical"
@@ -256,10 +256,10 @@
                     android:textColor="@color/dataEntryButtonTextColor" />
             </LinearLayout>
 
-            <GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            <GridLayout
                 android:id="@+id/data_entry_image_container"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:columnWidth="90dp"
                 android:columnCount="5"
                 android:gravity="center"
