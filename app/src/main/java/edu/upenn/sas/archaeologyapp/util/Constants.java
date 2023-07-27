@@ -15,6 +15,9 @@ public class Constants
     public static final String PARAM_KEY_MATERIAL = "material", PARAM_KEY_CONTEXT_NUMBER = "context_number", PARAM_KEY_IMAGES = "images", PARAM_KEY_COMMENTS = "comments";
 
     public static final String PARAM_FIND_UUID = "find_uuid";
+
+    public static final String PARAM_FIND_DELETED = "find_deleted";
+
     public static final String PARAM_KEY_TEAM_MEMBER = "team_member", PARAM_KEY_BEGIN_LATITUDE = "begin_latitude";
     public static final String PARAM_KEY_END_LATITUDE = "end_latitude", PARAM_KEY_BEGIN_LONGITUDE = "begin_longitude";
     public static final String PARAM_KEY_END_LONGITUDE = "end_longitude", PARAM_KEY_BEGIN_ALTITUDE = "begin_altitude";
@@ -39,11 +42,12 @@ public class Constants
 
     public static final String INSERT_FIND_URL = DEFAULT_SERVER_URL + "api/find/";
 
-    public static final String INSERT_FIND_IMAGE_URL = DEFAULT_SERVER_URL + "api/find/<uuid>/photo";
+    public static final String INSERT_FIND_IMAGE_URL = DEFAULT_SERVER_URL + "api/find/<uuid>/photo/";
 
     public static final String CONTEXT_URL =  DEFAULT_SERVER_URL + "api/context/<hemisphere>/<zone>/<easting>/<northing>/";
     private static final String DEFAULT_WEB_SERVER_URL = "http://40.117.209.97";
     public static final String PREFERENCES = "archaeological-survey-location-collector-preferences";
-
     public static String globalWebServerURL = DEFAULT_WEB_SERVER_URL;
 }
+
+

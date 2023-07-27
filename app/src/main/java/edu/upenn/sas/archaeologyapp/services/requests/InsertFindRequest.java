@@ -52,10 +52,10 @@ public class InsertFindRequest {
         queue.add(jsonArrayRequest);
     }
 
-    public static void insertFindRequest(String URL, JSONObject parametersObject , String token, RequestQueue queue, Context context, Response.Listener<JSONObject> Sucesslistener) {
+    public static void insertFindRequest(String URL, JSONObject parametersObject , String token, RequestQueue queue, Context context, Response.Listener<JSONObject> successListener,  Response.ErrorListener failureListener) {
 
-        Request jsonArrayRequest = new JsonObjectRequest(Request.Method.POST, URL, parametersObject,Sucesslistener
-                ,getRequestFailureHandler(context) ) {
+        Request jsonArrayRequest = new JsonObjectRequest(Request.Method.POST, URL, parametersObject,successListener,
+                failureListener ) {
             @Override
             public Map<String, String> getHeaders() {
                 Map<String, String> params = new HashMap<String, String>();

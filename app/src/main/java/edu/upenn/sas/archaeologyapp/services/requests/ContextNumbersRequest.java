@@ -79,6 +79,7 @@ public class ContextNumbersRequest {
         for(int i = 0; i < jsonArray.length(); i++){
             try {
                 JSONObject obj = (JSONObject) jsonArray.get(i);
+                System.out.println(obj);
                 contextNumbersList.add(String.valueOf(obj.getInt("context_number")));
             } catch (JSONException e) {
                 throw new RuntimeException(e);

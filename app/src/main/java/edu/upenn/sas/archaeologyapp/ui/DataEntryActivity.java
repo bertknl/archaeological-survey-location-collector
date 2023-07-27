@@ -110,6 +110,8 @@ public class DataEntryActivity extends BaseActivity {
     private Context context;
 
     private String find_uuid;
+
+    private int find_deleted;
     private RequestQueue requestQueue;
 
     /**
@@ -345,6 +347,7 @@ public class DataEntryActivity extends BaseActivity {
         //prePopulateFields();
         contextNumbersRequest(getContextURL("N", 38, 478130,4419430), getToken(context), requestQueue, context, response->{
             String [] previousContexts = contextJSONArray2ContextStrArray(response);
+            System.out.println(response);
             int max = 0;
             for (int i = 0; i < previousContexts.length; i++){
                 int current_context_value = Integer.valueOf(previousContexts[i]);
@@ -353,6 +356,10 @@ public class DataEntryActivity extends BaseActivity {
                 }
             }
             String [] extendedContextOptions =  Arrays.copyOf(previousContexts, previousContexts.length + 1);
+            for(int i = 0; i < extendedContextOptions.length; i++){
+                System.out.println(extendedContextOptions[i]);
+            }
+
             extendedContextOptions[previousContexts.length] = (max + 1) +" : new";
             setUpContextNumberSelect(extendedContextOptions);
         });
@@ -401,7 +408,7 @@ public class DataEntryActivity extends BaseActivity {
         }
         // Populate the UTM position details, if present
         find_uuid = getIntent().getStringExtra(Constants.PARAM_FIND_UUID);
-
+        find_deleted = getIntent().getIntExtra(Constants.PARAM_FIND_DELETED, Integer.MIN_VALUE);
         zone = getIntent().getIntExtra(Constants.PARAM_KEY_ZONE, Integer.MIN_VALUE);
         hemisphere = getIntent().getStringExtra(Constants.PARAM_KEY_HEMISPHERE);
         northing = getIntent().getIntExtra(Constants.PARAM_KEY_NORTHING, Integer.MIN_VALUE);
@@ -441,7 +448,7 @@ public class DataEntryActivity extends BaseActivity {
         }
         // Populate the material, if present
         String passedMaterial = getIntent().getStringExtra(Constants.PARAM_KEY_MATERIAL);
-        System.out.println(passedMaterial);
+
         if (passedMaterial != null) {
             // Search the dropdown for a matching material, and set to that if found
             for (int i = 0; i < materialsDropdown.getCount(); i++) {
@@ -634,18 +641,33 @@ public class DataEntryActivity extends BaseActivity {
 
 
         contextNumberDropdown = findViewById(R.id.data_entry_context_select_dropdown);
+
+
         // Create an ArrayAdapter using the string array and a default spinner layout
         ArrayAdapter<String> contextNumberAdapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_spinner_item, contextOptions);
         // Specify the layout to use when the list of choices appears
         contextNumberAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         // Apply the adapter to the spinner
+        String originalSelection = null;
+        if (contextNumberDropdown.getSelectedItem() != null){
+            originalSelection = contextNumberDropdown.getSelectedItem().toString();
+        }
         contextNumberDropdown.setAdapter(contextNumberAdapter);
-        //We want the default to be the last non new element of the drop down .
 
-        if (contextNumberDropdown.getCount() > 1){
+        if (originalSelection != null){
+            // Search the dropdown for a matching context number, and set to that if found
+            for (int i = 0; i < contextNumberDropdown.getCount(); i++) {
+                if (contextNumberDropdown.getItemAtPosition(i).toString().equalsIgnoreCase(originalSelection)) {
+                    contextNumberDropdown.setSelection(i);
+                }
+            }
+        }
+        //We want the default to be the last non new element of the drop down .
+        else if (contextNumberDropdown.getCount() > 1){
             contextNumberDropdown.setSelection(contextNumberDropdown.getCount()-2);
         }
+
 
         prePopulateFields();
 
@@ -686,6 +708,7 @@ public class DataEntryActivity extends BaseActivity {
                     }
                 }
                 String [] extendedContextOptions =  Arrays.copyOf(previousContexts, previousContexts.length + 1);
+                System.out.println(extendedContextOptions);
                 extendedContextOptions[previousContexts.length] = (max + 1) +" : new";
                 setUpContextNumberSelect(extendedContextOptions);
             });
@@ -880,8 +903,10 @@ public class DataEntryActivity extends BaseActivity {
      */
     public void deleteButtonPressed(View v) {
         DatabaseHandler databaseHandler = new DatabaseHandler(this);
-        databaseHandler.setFindSynced(getElement());
+        databaseHandler.setFindDeleted(getElement()); //Used to be setFindSynched
+        //This isn't good. We shoujld not set it as synched as
         for (String path : photoPaths) {
+            //Here we may have to also delete the images from the database.
             new File(path).delete();
         }
         onBackPressed();
@@ -983,7 +1008,7 @@ public class DataEntryActivity extends BaseActivity {
         String comment = commentsEditText.getText().toString();
         return new DataEntryElement(id, latitude, longitude, altitude, status, ARRatio, photoPaths,
                 material, contextNumber,comment, timestamp, timestamp, zone, hemisphere,
-                northing, preciseNorthing, easting, preciseEasting, sample, false , find_uuid);
+                northing, preciseNorthing, easting, preciseEasting, sample, false , find_uuid, find_deleted);
     }
 
     /**

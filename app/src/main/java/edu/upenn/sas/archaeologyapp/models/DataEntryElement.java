@@ -20,6 +20,8 @@ public class DataEntryElement
 
     private String FIND_UUID;
     private final Integer NORTHING, EASTING, ZONE, SAMPLE;
+
+    private int FIND_DELETED;
     /**
      * Constructor
      * @param ID - item id
@@ -46,7 +48,7 @@ public class DataEntryElement
                             Double ARRatio, ArrayList<String> imagePaths, String material, String contextNumber, String comments,
                             long createdTimestamp, long updateTimestamp, Integer zone, String hemisphere,
                             Integer northing, Double preciseNorthing, Integer easting, Double preciseEasting,
-                            Integer sample, boolean beenSynced, String find_uuid)
+                            Integer sample, boolean beenSynced, String find_uuid, int find_deleted)
     {
         this.ID = ID;
         this.LATITUDE = latitude;
@@ -69,6 +71,7 @@ public class DataEntryElement
         this.PRECISE_EASTING = preciseEasting;
         this.PRECISE_NORTHING = preciseNorthing;
         this.FIND_UUID = find_uuid;
+        this.FIND_DELETED = find_deleted;
     }
 
     /**
@@ -249,6 +252,10 @@ public class DataEntryElement
 
     public String getFindUUID(){
         return FIND_UUID;
+    }
+
+    public int getFindDeleted(){
+        return FIND_DELETED;
     }
 
     public void setFindUUID(String UUID){

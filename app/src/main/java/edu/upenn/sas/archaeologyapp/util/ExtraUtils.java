@@ -48,7 +48,22 @@ public class ExtraUtils {
             return this.bucketID;
         }
     }
+    public static class ServerUUIDBucketIDPair{
+        private String serverUUID;
+        private String bucketID;
+        public ServerUUIDBucketIDPair(String imagePath,  String bucketID){
+            this.serverUUID = imagePath;
+            this.bucketID = bucketID;
+        }
 
+        public String getServerUUID(){
+            return this.serverUUID;
+        }
+
+        public String getBucketID(){
+            return this.bucketID;
+        }
+    }
 
 
 }

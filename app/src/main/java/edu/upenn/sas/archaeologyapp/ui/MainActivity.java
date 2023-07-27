@@ -286,7 +286,7 @@ public class MainActivity extends BaseActivity implements SwipeRefreshLayout.OnR
 
                     paramsToPass.putString(Constants.PARAM_KEY_COMMENTS, dataEntryElement.getComments());
                     paramsToPass.putString(Constants.PARAM_FIND_UUID, dataEntryElement.getFindUUID());
-
+                    paramsToPass.putInt(Constants.PARAM_FIND_DELETED, dataEntryElement.getFindDeleted());
                     startActivityUsingIntent(DataEntryActivity.class, false, paramsToPass);
                 }
                 else if (displayMode == PATHS_MODE)

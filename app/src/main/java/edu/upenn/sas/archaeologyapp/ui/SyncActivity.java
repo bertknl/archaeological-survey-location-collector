@@ -18,18 +18,25 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.google.android.gms.common.util.IOUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.file.Files;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import edu.upenn.sas.archaeologyapp.R;
@@ -37,7 +44,8 @@ import edu.upenn.sas.archaeologyapp.models.PathElement;
 import edu.upenn.sas.archaeologyapp.models.StringObjectResponseWrapper;
 import edu.upenn.sas.archaeologyapp.models.DataEntryElement;
 import edu.upenn.sas.archaeologyapp.services.DatabaseHandler;
-import edu.upenn.sas.archaeologyapp.util.ExtraUtils;
+import edu.upenn.sas.archaeologyapp.util.ExtraUtils.InjectableFunc;
+import edu.upenn.sas.archaeologyapp.util.ExtraUtils.ServerUUIDBucketIDPair;
 import edu.upenn.sas.archaeologyapp.util.ExtraUtils.ImagePathBucketIDPair;
 
 import static edu.upenn.sas.archaeologyapp.services.StaticSingletons.getImagesToIgnore;
@@ -47,11 +55,19 @@ import static edu.upenn.sas.archaeologyapp.services.VolleyStringWrapper.makeVoll
 import static edu.upenn.sas.archaeologyapp.services.requests.InsertFindImageRequest.insertFindImageRequest;
 import static edu.upenn.sas.archaeologyapp.services.requests.InsertFindRequest.createInsertMaterialParametersObject;
 import static edu.upenn.sas.archaeologyapp.services.requests.InsertFindRequest.insertFindRequest;
+import static edu.upenn.sas.archaeologyapp.util.Constants.INSERT_FIND_IMAGE_URL;
 import static edu.upenn.sas.archaeologyapp.util.Constants.INSERT_FIND_URL;
 import static edu.upenn.sas.archaeologyapp.util.Constants.globalWebServerURL;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+/**
+ * This activity was heavily modified to remove certain bugs and make it compatible with the new server backend.
+ * @author Bert Liu
+ */
+
+
 
 /**
  * This activity is responsible for uploading all the records from the local database onto a server.
@@ -80,7 +96,7 @@ public class SyncActivity extends AppCompatActivity
     // A database helper class object that enables fetching of records from the local database
     DatabaseHandler databaseHandler;
 
-    HashSet<ImagePathBucketIDPair> imagesToIgnore;
+    Set<ImagePathBucketIDPair> imagesToIgnore;
     // A request queue to handle python requests
     RequestQueue queue;
     /**
@@ -125,89 +141,30 @@ public class SyncActivity extends AppCompatActivity
                 {
                     Toast.makeText(SyncActivity.this, "There are no records to sync.", Toast.LENGTH_SHORT).show();
                 }
-//                try {
-//                    newUploadFinds();
-//                } catch (IOException e) {
-//                    throw new RuntimeException(e);
-//                }
-//                // Disable the sync button while the sync is in progress
-             //   syncButton.setEnabled(false);
-               // qUploadFinds();
-                System.out.println(1);
 
-                System.out.println(2);
-                // Start uploading unsynced items
-                //uploadFinds();
-                // Start uploading unsynced paths
-                //uploadPaths();
+                syncButton.setEnabled(false);
+                uploadAllFindsAndAllImages();
 
             }
         });
     }
 
 
-    private void qUploadFinds(){
+    private void uploadAllFindsAndAllImages(){
+
+        InjectableFunc uploadImages = ()->{ uploadImages(); } ;
+        AtomicInteger countDown = new AtomicInteger(totalItems);
+
+        //Insert all new finds, each new find check if the countDown reaches 0. If it is 0, upload all the images.
         for(int i = uploadIndex; i < totalItems; i++) {
-            uploadFind(i);
+            uploadFind(i, countDown, uploadImages);
+        }
+        //if we have no new finds to upload, let's just upload images.
+        if (totalItems == 0){
+            uploadImages();
         }
     }
-
-
-
-
-    private void newUploadFinds( ) throws IOException {
-
-        Map <JSONObject, String> insertFindIDPairs = new HashMap<JSONObject, String>();
-        Map< JSONObject, ArrayList<byte[]> > insertFindImagePairs = new HashMap<JSONObject, ArrayList<byte[]>>() ;  //Only got sent when it has an id.
-
-
-        for(int i = uploadIndex; i < totalItems; i++) {
-            //Don't think this complicatedly
-            final DataEntryElement find = (elementsToUpload.get(i));
-            String utm_hemisphere = find.getHemisphere();
-            int utm_zone = find.getZone();
-            int area_utm_easting_meters = find.getEasting();
-            int area_utm_northing_meters = find.getNorthing();
-            String context_number_string_stripped = (find.getContextNumber()).replaceAll("[^\\d.]", "");
-            ;
-            int context_number = Integer.parseInt(context_number_string_stripped);
-            String material_category_pair = find.getMaterial();
-            String material = material_category_pair.split(" : ")[0].trim();
-            String category = material_category_pair.split(" : ")[1].trim();
-            String directory_notes = find.getComments();
-            JSONObject insertFindRequestParametersObject = createInsertMaterialParametersObject(context, utm_hemisphere, utm_zone, area_utm_easting_meters, area_utm_northing_meters, context_number, material, category, directory_notes);
-            insertFindIDPairs.put(insertFindRequestParametersObject, null);
-            ArrayList<String> finds = find.getImagePaths();
-            ArrayList<byte[]> allPhotosOfAnFind = new ArrayList<byte[]>();
-            for (int j = 0; j < finds.size(); j++) {
-
-                File fi = new File(finds.get(j));
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                    byte[] fileContent = Files.readAllBytes(fi.toPath());
-                    allPhotosOfAnFind.add(fileContent);
-                }
-            }
-            insertFindImagePairs.put(insertFindRequestParametersObject,allPhotosOfAnFind);
-        }
-
-
-
-    }
-
-    private Response.Listener<JSONObject> getRequestSuccessHandler(Context context, DataEntryElement find) {
-        Response.Listener<JSONObject> successHandler = response -> {
-            try {
-                find.setFindUUID(response.getString("id"));
-                System.out.println("We just set the FINDUUID into the find in the database!" + response.getString("id"));
-            } catch (JSONException e) {
-                throw new RuntimeException(e);
-            }
-
-            databaseHandler.setFindSynced(find);
-        };
-        return successHandler;
-    }
-    private void uploadFind(int index){
+    private void uploadFind(int index, AtomicInteger countDown, InjectableFunc uploadImages){
         final DataEntryElement find = elementsToUpload.get(index);
         String utm_hemisphere = find.getHemisphere();
         int utm_zone =  find.getZone();
@@ -221,47 +178,94 @@ public class SyncActivity extends AppCompatActivity
         String category = material_category_pair.split(" : ")[1].trim();
         String directory_notes = find.getComments();
         JSONObject insertFindRequestParametersObject = createInsertMaterialParametersObject(context, utm_hemisphere, utm_zone, area_utm_easting_meters,area_utm_northing_meters,context_number, material, category, directory_notes);
-        insertFindRequest(INSERT_FIND_URL, insertFindRequestParametersObject,getToken(context), queue,context, getRequestSuccessHandler(context, find));
+        insertFindRequest(INSERT_FIND_URL, insertFindRequestParametersObject,getToken(context), queue,context, response->{
 
-//        ArrayList<String> imagePaths = find.getImagePaths();
-//        for (int i = 0; i < imagePaths.size(); i++){
-//            File fi = new File(imagePaths.get(0));
-//            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-//                try {
-//                    byte[] fileContent = Files.readAllBytes(fi.toPath());
-//
-//                    String url = "https://j20200007.kotsf.com/asl/api/find/15b78e84-2136-43d4-aaea-a292605bcca5/photo/";
-//                    insertFindImageRequest(context, getToken(context), url , fileContent, queue);
-//                } catch (IOException e) {
-//                    throw new RuntimeException(e);
-//                }
-//            }
+            try {
+                find.setFindUUID(response.getString("id"));
+                System.out.println("We just set the FINDUUID into the find in the database!" + response.getString("id"));
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+            databaseHandler.setFindSynced(find);
+            if(countDown.decrementAndGet() == 0){
 
+                System.out.println("We reached the last one of the requests: " + countDown.get() + "Let's start upload images.");
+                uploadImages();
+            }
+        }, error->{
+            Toast.makeText(getApplicationContext(), "Upload failed: " + error,
+                    Toast.LENGTH_SHORT).show();
+            System.out.println("We failed to upload the find: " + insertFindRequestParametersObject);
+            if(countDown.decrementAndGet() == 0){
+                System.out.println("We reached the last one: " + countDown.get() + "Let's start upload images.");
+                uploadImages();
+            }
+        });
 
     }
 
 
-    private void filterFinishedOrProcessingImages(HashSet<ImagePathBucketIDPair> ImagePathBucketIDPairs, HashSet<ImagePathBucketIDPair> imagesToIgnore){
-
+    private void filterFinishedOrProcessingImages(Set<ImagePathBucketIDPair> ImagePathBucketIDPairs, Set<ImagePathBucketIDPair> imagesToIgnore){
         ImagePathBucketIDPairs.removeAll(imagesToIgnore);
     }
 
 
-    private void uploadImages(){
+    private synchronized void uploadImages(){
 
 
         //1. Go through all images not synced
-        HashSet<ImagePathBucketIDPair> ImagePathBucketIDPairs =  databaseHandler.getAllImagesUnsynched();
-        filterFinishedOrProcessingImages(ImagePathBucketIDPairs, imagesToIgnore);
-
+        Set<ImagePathBucketIDPair> ImagePathBucketIDPairs =  databaseHandler.getAllImagesUnsynched();
+        System.out.println("All images not synched yet" + ImagePathBucketIDPairs);
         //2. Filter out the images that are in the table
-        //3. Filiter image requests based on uuid and been_synched in table Bucket.
-        //4. For loop do each request,
-                //Before response: diable in the current image being uploaded table
-                //If Response is good, Then set image as synced
-                //If response is error, we do nothing(Maybe just show an error)
-                //Only reenable the insertion when the request failed.
-        //
+        filterFinishedOrProcessingImages(ImagePathBucketIDPairs, imagesToIgnore);
+        System.out.println("all Image Not In the Table" + ImagePathBucketIDPairs);
+
+        //3. Filiter image requests based on uuid and been_synched and not deleted in table Bucket.
+        Set<ServerUUIDBucketIDPair> Synced_FindUUID_Bucket_ID_pairs = databaseHandler.getAllSyncedFindsWithUUID();
+        System.out.println("All Synced finds with uuid from the server and been_synched and not deleted " + Synced_FindUUID_Bucket_ID_pairs);
+
+        Map<String, String> BucketIDServerUUIDMap = new ConcurrentHashMap<String, String>();
+        for (ServerUUIDBucketIDPair pair: Synced_FindUUID_Bucket_ID_pairs ){
+            BucketIDServerUUIDMap.put(pair.getBucketID(), pair.getServerUUID());
+        }
+        System.out.println("A map between BucketID " + BucketIDServerUUIDMap);
+
+        //4. Consider all the images
+        int counter = 0;
+        for (ImagePathBucketIDPair pair : ImagePathBucketIDPairs){
+            String coorespndingUUID = BucketIDServerUUIDMap.get(pair.getBucketID());
+            //4.1 If the image has a corresonding uuid in its find entry in the table bucket, we can send it!
+            if (coorespndingUUID != null && coorespndingUUID !="0" && !imagesToIgnore.contains(pair)){ // So this image has a uuid that we can use to send the image!!!
+                imagesToIgnore.add(pair);
+                Bitmap src=BitmapFactory.decodeFile(pair.getImagePath());
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                src.compress(Bitmap.CompressFormat.PNG, 100, baos);
+                byte[] fileContent =  baos.toByteArray();
+                System.out.println("length is " + fileContent.length);
+                String url = INSERT_FIND_IMAGE_URL.replace("<uuid>", coorespndingUUID);
+
+                int finalCounter = counter;
+                insertFindImageRequest(context, getToken(context), url , fileContent, queue, success ->{
+                    Log.d("Res++", String.valueOf(success));
+                    logText.setText(logText.getText().toString() + success);
+                    databaseHandler.setImageSynced(pair);
+                    System.out.println("We successfully uploaded the image, let's set the image as synced");
+
+                }, failure ->{
+                    System.out.println(finalCounter + ": We fail to read the image paths. ");
+                    imagesToIgnore.remove(pair);
+                });
+
+
+
+            }else{
+                System.out.println(counter +": We ignore image with bucket id: " + pair.getBucketID() + " and imagePath" + pair.getImagePath());
+                System.out.println("Because we ignore this image before trying to call it, we don't need to reenable the image");
+            }
+            counter ++;
+        }
+
+
     }
 
 
