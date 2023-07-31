@@ -18,17 +18,15 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
-//This is a trimmed version
+
 
 public class VolleyMultipartRequest extends Request<JSONObject> {
     private final String twoHyphens = "--";
     private final String lineEnd = "\r\n";
     private final String boundary = "apiclient-" + System.currentTimeMillis();
-
     private byte[] imageData;
     private Response.Listener<JSONObject> mListener;
     private Response.ErrorListener mErrorListener;
-
     public VolleyMultipartRequest(int method, String url, byte[] imageData,
                                   Response.Listener<JSONObject> listener,
                                   Response.ErrorListener errorListener) {

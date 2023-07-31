@@ -45,7 +45,7 @@ import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.coords.UTMCoord;
 import static edu.upenn.sas.archaeologyapp.R.id.map;
 
-import static edu.upenn.sas.archaeologyapp.services.StaticSingletons.getRequestQueueSingleton;
+import static edu.upenn.sas.archaeologyapp.util.StaticSingletons.getRequestQueueSingleton;
 import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.getToken;
 import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.setToken;
 
@@ -202,7 +202,7 @@ public class MainActivity extends BaseActivity implements SwipeRefreshLayout.OnR
                         return true;
                     case R.id.logout:
 
-                        setToken("Disabled_string", context);
+                        setToken("disabled_string", context);
                         System.out.println("Disabled token");
                         MainActivity.super.startActivityUsingIntent(LoginActivity.class);
                         Toast.makeText(context, "Disabled token", Toast.LENGTH_SHORT).show();

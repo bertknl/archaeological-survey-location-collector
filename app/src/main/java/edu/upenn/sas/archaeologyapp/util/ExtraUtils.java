@@ -4,25 +4,17 @@ import static edu.upenn.sas.archaeologyapp.util.Constants.PREFERENCES;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import java.util.Collections;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
-import com.android.volley.VolleyError;
-
-import org.json.JSONArray;
-
+/**
+    These are miscellaneous classes and functions temporarily put here for convenience.
+ */
 public class ExtraUtils {
     @FunctionalInterface
     public interface InjectableFunc {
         void apply();
-    }
-
-    @FunctionalInterface
-    public interface VolleyErrorHandler {
-        void apply(VolleyError error);
-    }
-
-    @FunctionalInterface
-    public interface JSONArraySuccessHandler {
-        void apply(JSONArray success);
     }
 
     public static void putString(String key, String value, Context context){
@@ -66,4 +58,12 @@ public class ExtraUtils {
     }
 
 
+
+    public static Set<ImagePathBucketIDPair> createImagePathBucketIDPairConcurrentHashSet(){
+        return  Collections.newSetFromMap(new ConcurrentHashMap<ImagePathBucketIDPair, Boolean>());
+    }
+
+    public static  Set<ServerUUIDBucketIDPair> createServerUUIDBucketIDPairConcurrentHashSet(){
+        return  Collections.newSetFromMap(new ConcurrentHashMap<ServerUUIDBucketIDPair, Boolean>());
+    }
 }

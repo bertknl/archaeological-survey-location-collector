@@ -1,6 +1,7 @@
 package edu.upenn.sas.archaeologyapp.services;
-import static edu.upenn.sas.archaeologyapp.services.StaticSingletons.createImagePathBucketIDPairConcurrentHashSet;
-import static edu.upenn.sas.archaeologyapp.services.StaticSingletons.createServerUUIDBucketIDPairConcurrentHashSet;
+import static edu.upenn.sas.archaeologyapp.util.ExtraUtils.createImagePathBucketIDPairConcurrentHashSet;
+import static edu.upenn.sas.archaeologyapp.util.ExtraUtils.createServerUUIDBucketIDPairConcurrentHashSet;
+
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -30,7 +31,6 @@ public class DatabaseHandler extends SQLiteOpenHelper
     private static final String KEY_ID = "bucket_id", KEY_FIND_UUID = "find_uuid", KEY_FIND_DELETED = "find_deleted",  KEY_LATITUDE = "latitude", KEY_LONGITUDE = "longitude";
     private static final String KEY_ALTITUDE = "altitude", KEY_STATUS = "status", KEY_AR_RATIO = "AR_ratio";
     private static final String KEY_MATERIAL = "material",KEY_CONTEXT_NUMBER = "context_number", KEY_COMMENT = "comment";
-
     private static final String KEY_CREATED_TIMESTAMP = "created_timestamp", KEY_UPDATED_TIMESTAMP = "updated_timestamp";
     private static final String KEY_ZONE = "zone", KEY_HEMISPHERE = "hemisphere";
     private static final String KEY_NORTHING = "northing", KEY_PRECISE_NORTHING = "precise_northing";
@@ -328,7 +328,7 @@ public class DatabaseHandler extends SQLiteOpenHelper
     {
         ArrayList<DataEntryElement> dataEntryElements = new ArrayList<>();
         String selectQuery = "SELECT  * FROM " + FINDS_TABLE_NAME + " WHERE "+ KEY_BEEN_SYNCED +
-                "=0 ORDER BY " + KEY_CREATED_TIMESTAMP + " DESC";
+                "=0 "+ " AND " + KEY_FIND_DELETED + "!=" + 1 + " " +"ORDER BY " + KEY_CREATED_TIMESTAMP + " DESC";
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = null;
         try
@@ -338,7 +338,7 @@ public class DatabaseHandler extends SQLiteOpenHelper
             {
                 do
                 {
-                    if (  cursor.getInt(cursor.getColumnIndex(KEY_FIND_DELETED)) == 0) {
+
                     DataEntryElement entry = new DataEntryElement(cursor.getString(cursor.getColumnIndex(KEY_ID)),
                             cursor.getDouble(cursor.getColumnIndex(KEY_LATITUDE)),
                             cursor.getDouble(cursor.getColumnIndex(KEY_LONGITUDE)),
@@ -364,7 +364,6 @@ public class DatabaseHandler extends SQLiteOpenHelper
 
                     );
                     dataEntryElements.add(entry);
-                }
                 }
                 while (cursor.moveToNext());
             }
@@ -504,14 +503,11 @@ public class DatabaseHandler extends SQLiteOpenHelper
         try
         {
             db.beginTransaction();
-
-
-                // The values to be written in a row
-                ContentValues values = new ContentValues();
-                values.put(KEY_IMAGE_ID, imagePath_BucketID.getImagePath());
-                values.put(KEY_IMAGE_BUCKET, imagePath_BucketID.getBucketID());
-                values.put(KEY_IMAGE_SYNCED, 1);
-                db.replace(IMAGE_TABLE_NAME, null, values);
+            ContentValues values = new ContentValues();
+            values.put(KEY_IMAGE_ID, imagePath_BucketID.getImagePath());
+            values.put(KEY_IMAGE_BUCKET, imagePath_BucketID.getBucketID());
+            values.put(KEY_IMAGE_SYNCED, 1);
+            db.replace(IMAGE_TABLE_NAME, null, values);
 
             db.setTransactionSuccessful();
             db.endTransaction();
@@ -591,8 +587,11 @@ public class DatabaseHandler extends SQLiteOpenHelper
     public Set<ExtraUtils.ServerUUIDBucketIDPair> getAllSyncedFindsWithUUID(){
         Set<ExtraUtils.ServerUUIDBucketIDPair> allSyncedFindsWithUUID =  createServerUUIDBucketIDPairConcurrentHashSet();
         //Will update this later to avoid if statements .
-        String selectQuery = "SELECT  * FROM " + FINDS_TABLE_NAME + " WHERE "+ KEY_BEEN_SYNCED +
-                "!=0 ORDER BY " + KEY_CREATED_TIMESTAMP + " DESC";
+        String selectQuery =
+                            "SELECT  * FROM " + FINDS_TABLE_NAME +
+                            " WHERE ("+ KEY_BEEN_SYNCED + "!=0 " +" AND " + KEY_FIND_UUID +" IS NOT NULL AND "
+                            +KEY_FIND_UUID +" != '0' AND "   +KEY_FIND_DELETED +" != 1)" +
+                            "ORDER BY " + KEY_CREATED_TIMESTAMP + " DESC";
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = null;
         try
@@ -602,15 +601,9 @@ public class DatabaseHandler extends SQLiteOpenHelper
             {
                 do
                 {
-
                     String UUID = cursor.getString(cursor.getColumnIndex(KEY_FIND_UUID));
                     String Bucket_Id = cursor.getString(cursor.getColumnIndex(KEY_ID));
-                    int beenSynced = cursor.getInt(cursor.getColumnIndex(KEY_BEEN_SYNCED));
-                    int findDeleted = cursor.getInt(cursor.getColumnIndex(KEY_FIND_DELETED));
-                    if (UUID != null && UUID != "0" && beenSynced!= 0 && findDeleted != 1 ){
-                        allSyncedFindsWithUUID.add(new ExtraUtils.ServerUUIDBucketIDPair(UUID, Bucket_Id));
-                    }
-
+                    allSyncedFindsWithUUID.add(new ExtraUtils.ServerUUIDBucketIDPair(UUID, Bucket_Id));
 
                 }
                 while (cursor.moveToNext());
@@ -639,7 +632,7 @@ public class DatabaseHandler extends SQLiteOpenHelper
      */
     public Set<ImagePathBucketIDPair> getAllImagesUnsynched(){
 
-        String selectQuery = "SELECT  * FROM " + IMAGE_TABLE_NAME;
+        String selectQuery = "SELECT  * FROM " + IMAGE_TABLE_NAME + " WHERE " + KEY_IMAGE_SYNCED + "== 0";
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = null;
 
@@ -652,12 +645,8 @@ public class DatabaseHandler extends SQLiteOpenHelper
             {
                 do
                 {
-                    int image_synched =  cursor.getInt(cursor.getColumnIndex(KEY_IMAGE_SYNCED));
-                    if (image_synched == 0){
-                        ImagePathBucketIDPair temp = new ImagePathBucketIDPair(cursor.getString(cursor.getColumnIndex(KEY_IMAGE_ID)), cursor.getString(cursor.getColumnIndex(KEY_IMAGE_BUCKET)));
-                        ImagePathBucketIDPairs.add(temp);
-                    }
-
+                    ImagePathBucketIDPair temp = new ImagePathBucketIDPair(cursor.getString(cursor.getColumnIndex(KEY_IMAGE_ID)), cursor.getString(cursor.getColumnIndex(KEY_IMAGE_BUCKET)));
+                    ImagePathBucketIDPairs.add(temp);
                 }
                 while (cursor.moveToNext());
             }
@@ -726,9 +715,10 @@ public class DatabaseHandler extends SQLiteOpenHelper
      */
     public Integer getLastSampleFromBucket(Integer zone, String hemisphere, Integer northing, Integer easting)
     {
-        String selectQuery = "SELECT * FROM " + FINDS_TABLE_NAME + " WHERE " + KEY_ZONE + "='" + zone + "' AND "
-                + KEY_HEMISPHERE + "='" + hemisphere + "' AND " + KEY_NORTHING + "='" + northing + "' AND "
-                + KEY_EASTING + "='" + easting + "' ORDER BY " + KEY_SAMPLE + " DESC";
+        String selectQuery =
+                            "SELECT * FROM " + FINDS_TABLE_NAME + " WHERE " +
+                            KEY_ZONE + "='" + zone + "' AND " + KEY_HEMISPHERE + "='" + hemisphere + "' AND "
+                            + KEY_NORTHING + "='" + northing + "' AND " + KEY_EASTING + "='" + easting + "' ORDER BY " + KEY_SAMPLE + " DESC";
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = null;
         Integer highestSampleNum = 0;

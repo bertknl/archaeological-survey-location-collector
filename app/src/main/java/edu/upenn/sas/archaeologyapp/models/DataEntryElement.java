@@ -249,16 +249,28 @@ public class DataEntryElement
         return BEEN_SYNCED;
     }
 
+    /**
+     * Set the UUID of the saved entry in the server to the find.
+     *  @param UUID - The UUID we want to set
+     */
+    public void setFindUUID(String UUID){
+        FIND_UUID = UUID;
+    }
 
+    /**
+     * Get the UUID of the find stored in the server as a database entry
+     * @return Returns the UUID of the find stored in the server as a database entry
+     */
     public String getFindUUID(){
         return FIND_UUID;
     }
-
+    /**
+     * Get a number to check whether the find is deleted, 1 is deleted, other values are not
+     * @return Returns a number to check whether the find is deleted
+     */
     public int getFindDeleted(){
         return FIND_DELETED;
     }
 
-    public void setFindUUID(String UUID){
-        FIND_UUID = UUID;
-    }
+
 }

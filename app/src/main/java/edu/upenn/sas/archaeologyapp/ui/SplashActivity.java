@@ -7,7 +7,7 @@ import edu.upenn.sas.archaeologyapp.R;
 import edu.upenn.sas.archaeologyapp.util.Constants;
 import edu.upenn.sas.archaeologyapp.util.ExtraUtils.InjectableFunc;
 
-import static edu.upenn.sas.archaeologyapp.services.StaticSingletons.getRequestQueueSingleton;
+import static edu.upenn.sas.archaeologyapp.util.StaticSingletons.getRequestQueueSingleton;
 import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.getToken;
 import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.tokenHaveAccess;
 
@@ -16,6 +16,12 @@ import com.android.volley.RequestQueue;
 /**
  * The splash activity
  * @author Created by eanvith on 24/12/16.
+ */
+
+/**
+ * Notice this activity is changed that it requires checking if the token is valid or not, otherwise, it would ask the user to input username and
+ * password
+ * @author Bert
  */
 public class SplashActivity extends BaseActivity
 {

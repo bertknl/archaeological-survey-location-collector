@@ -56,7 +56,7 @@ import edu.upenn.sas.archaeologyapp.util.Constants;
 import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.coords.UTMCoord;
 
-import static edu.upenn.sas.archaeologyapp.services.StaticSingletons.getRequestQueueSingleton;
+import static edu.upenn.sas.archaeologyapp.util.StaticSingletons.getRequestQueueSingleton;
 import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.getToken;
 import static edu.upenn.sas.archaeologyapp.services.requests.ContextNumbersRequest.contextJSONArray2ContextStrArray;
 import static edu.upenn.sas.archaeologyapp.services.requests.ContextNumbersRequest.contextNumbersRequest;
@@ -97,21 +97,24 @@ public class DataEntryActivity extends BaseActivity {
     ArrayList<String> photoPaths = new ArrayList<>();
     // The spinner for displaying the dropdown of materials
     Spinner materialsDropdown;
-    // The text box where the user can enter comments
-
+    // The spinner for displaying the dropdown of context numbers
     Spinner contextNumberDropdown;
+
+    // The text box where the user can enter comments
     EditText commentsEditText;
+
     private Integer zone, northing, easting, sample;
     private Uri photoURI = null;
     private LocationCollector locationCollector;
     // The timestamp of the find's location
     private long timestamp;
-
+    //The context of the this activity
     private Context context;
-
+    //The uuid of of the find saved in the server
     private String find_uuid;
-
+    //1 indicates the file is deleted, other values indicates the file is not deleted
     private int find_deleted;
+    //
     private RequestQueue requestQueue;
 
     /**
@@ -326,10 +329,9 @@ public class DataEntryActivity extends BaseActivity {
                 }
             }
         });
+
         // Configure the materials dropdown menu
-        // Load the team member API response from saved preferences
-
-
+        // Load the team member API response from the saved preferences
 
         String materialGeneralOptions[] = getMaterialCategoryOptions( context);
 
@@ -343,29 +345,31 @@ public class DataEntryActivity extends BaseActivity {
         // Apply the adapter to the spinner
         materialsDropdown.setAdapter(materialsAdapter);
         materialsDropdown.setSelection(0);
-
-        //prePopulateFields();
-        contextNumbersRequest(getContextURL("N", 38, 478130,4419430), getToken(context), requestQueue, context, response->{
-            String [] previousContexts = contextJSONArray2ContextStrArray(response);
-            System.out.println(response);
-            int max = 0;
-            for (int i = 0; i < previousContexts.length; i++){
-                int current_context_value = Integer.valueOf(previousContexts[i]);
-                if (current_context_value > max){
-                    max = current_context_value;
+        prePopulateFields();
+        if (hemisphere != null && zone != null && easting != null && northing != null) {
+            contextNumbersRequest(getContextURL(hemisphere, zone, easting, northing), getToken(context), requestQueue, response -> {
+                String[] previousContexts = contextJSONArray2ContextStrArray(response);
+                int max = 0;
+                for (int i = 0; i < previousContexts.length; i++) {
+                    int current_context_value = Integer.valueOf(previousContexts[i]);
+                    if (current_context_value > max) {
+                        max = current_context_value;
+                    }
                 }
-            }
-            String [] extendedContextOptions =  Arrays.copyOf(previousContexts, previousContexts.length + 1);
-            for(int i = 0; i < extendedContextOptions.length; i++){
-                System.out.println(extendedContextOptions[i]);
-            }
+                String[] extendedContextOptions = Arrays.copyOf(previousContexts, previousContexts.length + 1);
+                extendedContextOptions[previousContexts.length] = (max + 1) + " : new";
+                setUpContextNumberSelect(extendedContextOptions);
 
-            extendedContextOptions[previousContexts.length] = (max + 1) +" : new";
-            setUpContextNumberSelect(extendedContextOptions);
-        });
+            }, error -> {
 
+            });
+        }
     }
-
+    /**
+     * Get the materials from the saved sharedPreferences.
+     * @param context - The context of the activity
+     * @return a list of strings of the available materials.
+     */
     @NonNull
     public static String[] getMaterialCategoryOptions(Context context) {
         SharedPreferences settings = context.getSharedPreferences(PREFERENCES, 0);
@@ -373,7 +377,11 @@ public class DataEntryActivity extends BaseActivity {
         String materialCategoryOptions[] = parseMaterialGeneralAPIResponse(materialGeneralAPIResponse, context);
         return materialCategoryOptions;
     }
-
+    /**
+     * User clicked show GPS
+     * @param context - The context of the activity
+     * @return a list of strings of the available materials.
+     */
     public static String[] parseMaterialGeneralAPIResponse(String materialGeneralAPIResponse, Context context) {
         ArrayList<String> parsedStrings;
         try {
@@ -463,7 +471,7 @@ public class DataEntryActivity extends BaseActivity {
 
         String passedContextNumber = getIntent().getStringExtra(Constants.PARAM_KEY_CONTEXT_NUMBER);
 
-        if (passedContextNumber != null) {
+        if (passedContextNumber != null && contextNumberDropdown != null) {
             // Search the dropdown for a matching context number, and set to that if found
             for (int i = 0; i < contextNumberDropdown.getCount(); i++) {
                 if (contextNumberDropdown.getItemAtPosition(i).toString().equalsIgnoreCase(passedContextNumber)) {
@@ -636,6 +644,11 @@ public class DataEntryActivity extends BaseActivity {
         return image;
     }
 
+    /**
+     * Set up the select that contains all the context numbers the user can select
+     * for this find.
+     * @param contextOptions a list of strings of the context numbers available
+     */
 
     private void setUpContextNumberSelect(String[] contextOptions){
 
@@ -669,13 +682,13 @@ public class DataEntryActivity extends BaseActivity {
         }
 
 
-        prePopulateFields();
+
 
     }
-    /**
-     * Set the UTM location
-     */
 
+    /**
+     * Set UTM location
+     */
 
     private void setUTMLocation() {
         if (latitude != null && longitude != null) {
@@ -697,8 +710,8 @@ public class DataEntryActivity extends BaseActivity {
             sampleTextView.setText(String.valueOf(sample));
             timestamp = (new Date()).getTime();
             //Here, call the request to get the context information for this locatiuon
-
-            contextNumbersRequest(getContextURL("N", 38, 478130,4419430), getToken(context), requestQueue, context, response->{
+            prePopulateFields();
+            contextNumbersRequest(getContextURL(hemisphere, zone, easting,northing), getToken(context), requestQueue, response->{
                 String [] previousContexts = contextJSONArray2ContextStrArray(response);
                 int max = 0;
                 for (int i = 0; i < previousContexts.length; i++){
@@ -708,9 +721,11 @@ public class DataEntryActivity extends BaseActivity {
                     }
                 }
                 String [] extendedContextOptions =  Arrays.copyOf(previousContexts, previousContexts.length + 1);
-                System.out.println(extendedContextOptions);
                 extendedContextOptions[previousContexts.length] = (max + 1) +" : new";
                 setUpContextNumberSelect(extendedContextOptions);
+
+            }, error -> {
+
             });
 
         }
