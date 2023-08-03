@@ -1,4 +1,4 @@
-package edu.upenn.sas.archaeologyapp.models;
+package edu.upenn.sas.archaeologyapp.services;
 
 import static edu.upenn.sas.archaeologyapp.util.Constants.LOGIN_SERVER_URL;
 import static edu.upenn.sas.archaeologyapp.util.Constants.TOKEN_ACCESS_TESTING_URL;
@@ -14,7 +14,6 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,13 +21,21 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
-import edu.upenn.sas.archaeologyapp.ui.LoginActivity;
-import edu.upenn.sas.archaeologyapp.util.ExtraTypes;
-import edu.upenn.sas.archaeologyapp.util.ExtraTypes.InjectableFunc;
+import edu.upenn.sas.archaeologyapp.util.ExtraUtils.InjectableFunc;
 
+
+/**
+ * This class contains various static methods to authenticate the user via user's token, user names and passwords.
+ */
 public class UserAuthentication {
 
-    static public SharedPreferences getEncryptedSharedPreferences(Context context)  {
+    /**
+     * This method get the encrypted sharedPreferences. It has to be encrypted for safety.
+     *
+     * @param context The context of the class that calls this method.
+     * @return A sharedPreferences object that is encrypted.
+     */
+    static public SharedPreferences getEncryptedSharedPreferences(Context context) {
 
         try {
             return EncryptedSharedPreferences.create(
@@ -43,6 +50,12 @@ public class UserAuthentication {
         }
     }
 
+    /**
+     * This method get the token from the context.
+     *
+     * @param context The context of the class that calls this method.
+     * @return A token string
+     */
     static public String getToken(Context context) {
         try {
             return getToken(getEncryptedSharedPreferences(context));
@@ -51,6 +64,12 @@ public class UserAuthentication {
         }
     }
 
+    /**
+     * This method get the token from the context.
+     *
+     * @param sharedPreferences The shared preferences object from which we get the token.
+     * @return A token string
+     */
     static public String getToken(SharedPreferences sharedPreferences) {
         try {
             return sharedPreferences.getString("token", "");
@@ -59,7 +78,14 @@ public class UserAuthentication {
         }
     }
 
-    static public boolean setToken(String token, Context context)  {
+    /**
+     * This method get the token from the context.
+     *
+     * @param token   The token string we want to store
+     * @param context The context of the class that calls this method.
+     * @return a boolean value indicating success or failure of the operation.
+     */
+    static public boolean setToken(String token, Context context) {
         try {
             return setToken(token, UserAuthentication.getEncryptedSharedPreferences(context));
         } catch (Exception e) {
@@ -67,6 +93,13 @@ public class UserAuthentication {
         }
     }
 
+    /**
+     * This method get the token from the context.
+     *
+     * @param token             The token string we want to store
+     * @param sharedPreferences The shared preferences object to which we set the token.
+     * @return a boolean value indicating success or failure of the operation.
+     */
     static public boolean setToken(String token, SharedPreferences sharedPreferences) {
         try {
             sharedPreferences.edit().putString("token", token).apply();
@@ -76,7 +109,18 @@ public class UserAuthentication {
         }
     }
 
-    static public void tryLogin(String userName, String userPassword, Context context, InjectableFunc handleLoginSuccess, InjectableFunc handleLoginFailure) {
+    /**
+     * This method get the token from the context. It does so by sending the userName and userPassword to the login server url to get a token.
+     *
+     * @param userName           The name of the user
+     * @param userPassword       The password of the user
+     * @param context            The context of the calling function
+     * @param handleLoginSuccess The method to call when the request returns a token
+     * @param handleLoginFailure The method to call when it is a bad request
+     * @param queue              The request queue to which the created requests is added
+     * @return a boolean value indiccating success or failure of the operation.
+     */
+    static public void tryLogin(String userName, String userPassword, Context context, InjectableFunc handleLoginSuccess, InjectableFunc handleLoginFailure, RequestQueue queue) {
 
         JSONObject object = new JSONObject();
         try {
@@ -91,7 +135,7 @@ public class UserAuthentication {
                 response -> {
                     try {
                         String token = response.getString("token");
-                        setToken( token, context);
+                        setToken(token, context);
                         handleLoginSuccess.apply();
                     } catch (JSONException e) {
                         Toast.makeText(context, "Unexpected error parsing return JSON", Toast.LENGTH_SHORT).show();
@@ -103,10 +147,19 @@ public class UserAuthentication {
             handleLoginFailure.apply();
 
         });
-        sendRequest(jsonObjectRequest, context);
+        queue.add(jsonObjectRequest);
+
     }
 
-    static public void tokenHaveAccess(String token, Context context, InjectableFunc handleTokenWithSuccess,  InjectableFunc handleTokenWithoutSuccess  ) {
+    /**
+     * This method tests the validity of the token by sending a simple request that needs a proper token.
+     *
+     * @param token                  The string token that we want to check if it can be used to access the api
+     * @param handleTokenWithSuccess The method to call when the token is valid
+     * @param handleTokenWithoutSuccess The method to call when the token is invalid
+     * @param queue                  The request queue to which the created requests is added
+     */
+    static public void tokenHaveAccess(String token, InjectableFunc handleTokenWithSuccess, InjectableFunc handleTokenWithoutSuccess, RequestQueue queue) {
 
         Request jsonArrayRequest = new JsonArrayRequest(TOKEN_ACCESS_TESTING_URL,
                 response -> {
@@ -115,20 +168,14 @@ public class UserAuthentication {
             handleTokenWithoutSuccess.apply();
         }) {
             @Override
-            public Map<String, String> getHeaders()  {
+            public Map<String, String> getHeaders() {
                 Map<String, String> params = new HashMap<String, String>();
                 params.put("Authorization", "Token " + token);
                 return params;
             }
         };
-        sendRequest(jsonArrayRequest, context);
+
+        queue.add(jsonArrayRequest);
 
     }
-
-    static private void sendRequest(Request request, Context context) {
-        RequestQueue queue = Volley.newRequestQueue(context);
-        queue.add(request);
-    }
-
-
 }

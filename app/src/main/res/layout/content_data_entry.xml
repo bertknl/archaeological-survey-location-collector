@@ -12,98 +12,109 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="15dp"
             android:layout_marginTop="0dp"
-            android:background="@color/colorTintedBackground">
+            android:background="@color/colorTintedBackground"
+            android:orientation="vertical"
+            android:padding="15dp">
+
             <LinearLayout
-                android:padding="0dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:gravity="center"
                 android:orientation="horizontal"
-                android:gravity="center">
+                android:padding="0dp">
+
                 <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
                     android:ellipsize="end"
-                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:maxLines="1"
                     android:text="@string/grid_2"
-                    android:layout_weight="1"
+                    android:textStyle="bold" />
+
+                <TextView
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:maxLines="1" />
-                <TextView
+                    android:layout_weight="1"
                     android:ellipsize="end"
-                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:maxLines="1"
                     android:text="@string/easting_2"
-                    android:layout_weight="1"
+                    android:textStyle="bold" />
+
+                <TextView
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:maxLines="1" />
-                <TextView
+                    android:layout_weight="1"
                     android:ellipsize="end"
-                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:maxLines="1"
                     android:text="@string/northing_2"
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:maxLines="1" />
+                    android:textStyle="bold" />
+
                 <TextView
-                    android:ellipsize="end"
-                    android:textStyle="bold"
-                    android:text="@string/sample"
-                    android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
                     android:gravity="center"
-                    android:maxLines="1" />
+                    android:maxLines="1"
+                    android:text="@string/sample"
+                    android:textStyle="bold" />
             </LinearLayout>
+
             <LinearLayout
-                android:paddingBottom="12dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_weight="0.97"
                 android:orientation="horizontal"
-                android:layout_weight="0.97">
+                android:paddingBottom="12dp">
+
                 <TextView
-                    android:ellipsize="end"
-                    android:layout_weight="1"
                     android:id="@+id/data_entry_grid"
-                    android:text="@string/blank_assignment"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:maxLines="1" />
-                <TextView
-                    android:ellipsize="end"
                     android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:gravity="center"
+                    android:maxLines="1"
+                    android:text="@string/blank_assignment" />
+
+                <TextView
                     android:id="@+id/data_entry_easting"
-                    android:text="@string/blank_assignment"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:maxLines="1" />
-                <TextView
-                    android:ellipsize="end"
                     android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:gravity="center"
+                    android:maxLines="1"
+                    android:text="@string/blank_assignment" />
+
+                <TextView
                     android:id="@+id/data_entry_northing"
-                    android:text="@string/blank_assignment"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:maxLines="1" />
-                <TextView
-                    android:ellipsize="end"
                     android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:gravity="center"
+                    android:maxLines="1"
+                    android:text="@string/blank_assignment" />
+
+                <TextView
                     android:id="@+id/data_entry_sample"
-                    android:text="@string/blank_assignment"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
                     android:gravity="center"
-                    android:maxLines="1" />
+                    android:maxLines="1"
+                    android:text="@string/blank_assignment" />
             </LinearLayout>
         </LinearLayout>
         <LinearLayout
@@ -209,49 +220,53 @@
                     android:textStyle="bold" />
             </LinearLayout>
         </LinearLayout>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="15dp"
             android:layout_marginTop="15dp"
-            android:background="@color/colorTintedBackground">
+            android:background="@color/colorTintedBackground"
+            android:orientation="vertical"
+            android:padding="15dp">
+
             <LinearLayout
-                android:layout_margin="0dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_margin="0dp"
                 android:orientation="horizontal">
+
                 <Button
                     android:id="@+id/data_entry_open_camera"
-                    android:background="@color/dataEntryButtonBackgroundColor"
-                    android:textColor="@color/dataEntryButtonTextColor"
-                    android:layout_margin="5dp"
-                    android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="@string/camera_button" />
+                    android:layout_margin="5dp"
+                    android:layout_weight="1"
+                    android:background="@color/dataEntryButtonBackgroundColor"
+                    android:text="@string/camera_button"
+                    android:textColor="@color/dataEntryButtonTextColor" />
+
                 <Button
                     android:id="@+id/data_entry_open_gallery"
-                    android:background="@color/dataEntryButtonBackgroundColor"
-                    android:textColor="@color/dataEntryButtonTextColor"
-                    android:layout_margin="5dp"
-                    android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="@string/gallery_button" />
+                    android:layout_margin="5dp"
+                    android:layout_weight="1"
+                    android:background="@color/dataEntryButtonBackgroundColor"
+                    android:text="@string/gallery_button"
+                    android:textColor="@color/dataEntryButtonTextColor" />
             </LinearLayout>
-            <GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+            <GridLayout
                 android:id="@+id/data_entry_image_container"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:columnWidth="90dp"
-                android:numColumns="auto_fit"
                 android:columnCount="5"
-                android:verticalSpacing="10dp"
+                android:gravity="center"
                 android:horizontalSpacing="10dp"
+                android:numColumns="auto_fit"
                 android:stretchMode="columnWidth"
-                android:gravity="center">
-            </GridLayout>
+                android:verticalSpacing="10dp"></GridLayout>
         </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
@@ -269,11 +284,31 @@
                 android:layout_height="match_parent"
                 android:gravity="center_vertical"
                 android:maxLines="1" />
+
             <Spinner
                 android:id="@+id/data_entry_materials_drop_down"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="16dp"/>
+                android:layout_margin="16dp" />
+
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:gravity="center_vertical"
+                android:maxLines="1"
+                android:text="@string/select_context"
+                android:textStyle="bold" />
+
+            <Spinner
+                android:id="@+id/data_entry_context_select_dropdown"
+                android:layout_width="319dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:layout_weight="1" />
+
             <EditText
                 android:id="@+id/data_entry_comment_text_view"
                 android:layout_width="match_parent"

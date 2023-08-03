@@ -7,7 +7,7 @@ import java.util.ArrayList;
 public class DataEntryElement
 {
     // The ID for this entry
-    private final String ID, STATUS, MATERIAL, COMMENTS, HEMISPHERE;
+    private final String ID, STATUS, MATERIAL, CONTEXT_NUMBER, COMMENTS, HEMISPHERE;
     private final double LATITUDE, LONGITUDE, ALTITUDE, PRECISE_NORTHING, PRECISE_EASTING;
     // The status of the position fetch
     private final Double AR_RATIO;
@@ -17,7 +17,11 @@ public class DataEntryElement
     private final long CREATED_TIME_STAMP, UPDATE_TIME_STAMP;
     // A boolean for whether or not this item has been uploaded/synced
     private final boolean BEEN_SYNCED;
+
+    private String FIND_UUID;
     private final Integer NORTHING, EASTING, ZONE, SAMPLE;
+
+    private int FIND_DELETED;
     /**
      * Constructor
      * @param ID - item id
@@ -41,10 +45,10 @@ public class DataEntryElement
      * @param beenSynced - whether the find is synced
      */
     public DataEntryElement(String ID, double latitude, double longitude, double altitude, String status,
-                            Double ARRatio, ArrayList<String> imagePaths, String material, String comments,
+                            Double ARRatio, ArrayList<String> imagePaths, String material, String contextNumber, String comments,
                             long createdTimestamp, long updateTimestamp, Integer zone, String hemisphere,
                             Integer northing, Double preciseNorthing, Integer easting, Double preciseEasting,
-                            Integer sample, boolean beenSynced)
+                            Integer sample, boolean beenSynced, String find_uuid, int find_deleted)
     {
         this.ID = ID;
         this.LATITUDE = latitude;
@@ -54,6 +58,7 @@ public class DataEntryElement
         this.AR_RATIO = ARRatio;
         this.IMAGE_PATHS = imagePaths;
         this.MATERIAL = material;
+        this.CONTEXT_NUMBER = contextNumber;
         this.COMMENTS = comments;
         this.CREATED_TIME_STAMP = createdTimestamp;
         this.UPDATE_TIME_STAMP = updateTimestamp;
@@ -65,6 +70,8 @@ public class DataEntryElement
         this.BEEN_SYNCED = beenSynced;
         this.PRECISE_EASTING = preciseEasting;
         this.PRECISE_NORTHING = preciseNorthing;
+        this.FIND_UUID = find_uuid;
+        this.FIND_DELETED = find_deleted;
     }
 
     /**
@@ -143,6 +150,10 @@ public class DataEntryElement
      * Get comments
      * @return Returns comments
      */
+
+    public String getContextNumber(){
+        return CONTEXT_NUMBER;
+    }
     public String getComments()
     {
         return COMMENTS;
@@ -237,4 +248,29 @@ public class DataEntryElement
     {
         return BEEN_SYNCED;
     }
+
+    /**
+     * Set the UUID of the saved entry in the server to the find.
+     *  @param UUID - The UUID we want to set
+     */
+    public void setFindUUID(String UUID){
+        FIND_UUID = UUID;
+    }
+
+    /**
+     * Get the UUID of the find stored in the server as a database entry
+     * @return Returns the UUID of the find stored in the server as a database entry
+     */
+    public String getFindUUID(){
+        return FIND_UUID;
+    }
+    /**
+     * Get a number to check whether the find is deleted, 1 is deleted, other values are not
+     * @return Returns a number to check whether the find is deleted
+     */
+    public int getFindDeleted(){
+        return FIND_DELETED;
+    }
+
+
 }

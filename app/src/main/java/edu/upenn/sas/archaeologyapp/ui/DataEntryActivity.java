@@ -44,6 +44,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.UUID;
 
@@ -55,9 +56,20 @@ import edu.upenn.sas.archaeologyapp.util.Constants;
 import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.coords.UTMCoord;
 
+import static edu.upenn.sas.archaeologyapp.util.StaticSingletons.getRequestQueueSingleton;
+import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.getToken;
+import static edu.upenn.sas.archaeologyapp.services.requests.ContextNumbersRequest.contextJSONArray2ContextStrArray;
+import static edu.upenn.sas.archaeologyapp.services.requests.ContextNumbersRequest.contextNumbersRequest;
+import static edu.upenn.sas.archaeologyapp.services.requests.ContextNumbersRequest.getContextURL;
 import static edu.upenn.sas.archaeologyapp.util.Constants.DEFAULT_POSITION_UPDATE_INTERVAL;
 import static edu.upenn.sas.archaeologyapp.util.Constants.DEFAULT_REACH_HOST;
 import static edu.upenn.sas.archaeologyapp.util.Constants.DEFAULT_REACH_PORT;
+
+import com.android.volley.RequestQueue;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * The Activity where the user enters all the data
@@ -85,13 +97,25 @@ public class DataEntryActivity extends BaseActivity {
     ArrayList<String> photoPaths = new ArrayList<>();
     // The spinner for displaying the dropdown of materials
     Spinner materialsDropdown;
+    // The spinner for displaying the dropdown of context numbers
+    Spinner contextNumberDropdown;
+
     // The text box where the user can enter comments
     EditText commentsEditText;
+
     private Integer zone, northing, easting, sample;
     private Uri photoURI = null;
     private LocationCollector locationCollector;
     // The timestamp of the find's location
     private long timestamp;
+    //The context of the this activity
+    private Context context;
+    //The uuid of of the find saved in the server
+    private String find_uuid;
+    //1 indicates the file is deleted, other values indicates the file is not deleted
+    private int find_deleted;
+    //
+    private RequestQueue requestQueue;
 
     /**
      * Activity created
@@ -101,6 +125,8 @@ public class DataEntryActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        context = this;
+        requestQueue = getRequestQueueSingleton(getApplicationContext());;
         setContentView(R.layout.activity_data_entry);
         initializeViews();
         // Load persistent app data from shared preferences
@@ -170,6 +196,8 @@ public class DataEntryActivity extends BaseActivity {
      */
     private void initializeViews() {
         // Set the toolbar
+
+
         Toolbar toolbar = findViewById(R.id.toolbar_data_entry);
         setSupportActionBar(toolbar);
         // Configure up button to go back to previous activity
@@ -183,6 +211,7 @@ public class DataEntryActivity extends BaseActivity {
         northingTextView = findViewById(R.id.data_entry_northing);
         eastingTextView = findViewById(R.id.data_entry_easting);
         sampleTextView = findViewById(R.id.data_entry_sample);
+
         GPSConnectionTextView = findViewById(R.id.GPSConnection);
         reachConnectionTextView = findViewById(R.id.reachConnection);
         GPSConnectionTextView.setText(String.format(getResources().getString(R.string.GPSConnection), getString(R.string.blank_assignment)));
@@ -300,11 +329,13 @@ public class DataEntryActivity extends BaseActivity {
                 }
             }
         });
+
         // Configure the materials dropdown menu
-        // Load the team member API response from saved preferences
-        SharedPreferences settings = getSharedPreferences(PREFERENCES, 0);
-        String materialGeneralAPIResponse = settings.getString("materialGeneralAPIResponse", getString(R.string.default_material_general));
-        String materialGeneralOptions[] = materialGeneralAPIResponse.split("\\r?\\n");
+        // Load the team member API response from the saved preferences
+
+        String materialGeneralOptions[] = getMaterialCategoryOptions( context);
+
+
         materialsDropdown = findViewById(R.id.data_entry_materials_drop_down);
         // Create an ArrayAdapter using the string array and a default spinner layout
         ArrayAdapter<String> materialsAdapter = new ArrayAdapter<>(this,
@@ -315,7 +346,63 @@ public class DataEntryActivity extends BaseActivity {
         materialsDropdown.setAdapter(materialsAdapter);
         materialsDropdown.setSelection(0);
         prePopulateFields();
+        if (hemisphere != null && zone != null && easting != null && northing != null) {
+            contextNumbersRequest(getContextURL(hemisphere, zone, easting, northing), getToken(context), requestQueue, response -> {
+                String[] previousContexts = contextJSONArray2ContextStrArray(response);
+                int max = 0;
+                for (int i = 0; i < previousContexts.length; i++) {
+                    int current_context_value = Integer.valueOf(previousContexts[i]);
+                    if (current_context_value > max) {
+                        max = current_context_value;
+                    }
+                }
+                String[] extendedContextOptions = Arrays.copyOf(previousContexts, previousContexts.length + 1);
+                extendedContextOptions[previousContexts.length] = (max + 1) + " : new";
+                setUpContextNumberSelect(extendedContextOptions);
+
+            }, error -> {
+
+            });
+        }
     }
+    /**
+     * Get the materials from the saved sharedPreferences.
+     * @param context - The context of the activity
+     * @return a list of strings of the available materials.
+     */
+    @NonNull
+    public static String[] getMaterialCategoryOptions(Context context) {
+        SharedPreferences settings = context.getSharedPreferences(PREFERENCES, 0);
+        String materialGeneralAPIResponse = settings.getString("materialGeneralAPIResponse", null);
+        String materialCategoryOptions[] = parseMaterialGeneralAPIResponse(materialGeneralAPIResponse, context);
+        return materialCategoryOptions;
+    }
+    /**
+     * User clicked show GPS
+     * @param context - The context of the activity
+     * @return a list of strings of the available materials.
+     */
+    public static String[] parseMaterialGeneralAPIResponse(String materialGeneralAPIResponse, Context context) {
+        ArrayList<String> parsedStrings;
+        try {
+            parsedStrings = new ArrayList<>();
+            JSONArray parsedResponseJsonArray = new JSONArray(materialGeneralAPIResponse);
+            for (int i = 0; i < parsedResponseJsonArray.length(); i++) {
+                JSONObject obj = parsedResponseJsonArray.getJSONObject(i);
+                parsedStrings.add(obj.getString("material") + " : " + obj.getString("category"));
+            }
+
+        } catch (JSONException e) {
+            parsedStrings = new ArrayList<>();
+            String defaultMaterial = context.getString(R.string.default_material_general);
+            String defaultCategory = context.getString(R.string.default_material_category);
+            parsedStrings.add(defaultMaterial +" : " + defaultCategory);
+        }
+        Object[] parsedStringsObjectArray = parsedStrings.toArray();
+        return Arrays.copyOf(parsedStringsObjectArray, parsedStringsObjectArray.length, String[].class); // Arrays.stream(parsedStrings.toArray()).toArray(String[]::new);
+    }
+
+
 
     /**
      * Check if any parameters were passed to this activity, and pre populate the data if required
@@ -328,6 +415,8 @@ public class DataEntryActivity extends BaseActivity {
             return;
         }
         // Populate the UTM position details, if present
+        find_uuid = getIntent().getStringExtra(Constants.PARAM_FIND_UUID);
+        find_deleted = getIntent().getIntExtra(Constants.PARAM_FIND_DELETED, Integer.MIN_VALUE);
         zone = getIntent().getIntExtra(Constants.PARAM_KEY_ZONE, Integer.MIN_VALUE);
         hemisphere = getIntent().getStringExtra(Constants.PARAM_KEY_HEMISPHERE);
         northing = getIntent().getIntExtra(Constants.PARAM_KEY_NORTHING, Integer.MIN_VALUE);
@@ -362,10 +451,12 @@ public class DataEntryActivity extends BaseActivity {
         ArrayList<String> passedPaths = getIntent().getStringArrayListExtra(Constants.PARAM_KEY_IMAGES);
         if (!passedPaths.isEmpty()) {
             photoPaths = passedPaths;
+
             populateImagesWithPhotoPaths();
         }
         // Populate the material, if present
         String passedMaterial = getIntent().getStringExtra(Constants.PARAM_KEY_MATERIAL);
+
         if (passedMaterial != null) {
             // Search the dropdown for a matching material, and set to that if found
             for (int i = 0; i < materialsDropdown.getCount(); i++) {
@@ -374,6 +465,22 @@ public class DataEntryActivity extends BaseActivity {
                 }
             }
         }
+
+        // Populate the material, if present
+
+
+        String passedContextNumber = getIntent().getStringExtra(Constants.PARAM_KEY_CONTEXT_NUMBER);
+
+        if (passedContextNumber != null && contextNumberDropdown != null) {
+            // Search the dropdown for a matching context number, and set to that if found
+            for (int i = 0; i < contextNumberDropdown.getCount(); i++) {
+                if (contextNumberDropdown.getItemAtPosition(i).toString().equalsIgnoreCase(passedContextNumber)) {
+                    contextNumberDropdown.setSelection(i);
+                }
+            }
+        }
+
+
         // Populate the comments, if present
         String passedComments = getIntent().getStringExtra(Constants.PARAM_KEY_COMMENTS);
         if (passedComments != null) {
@@ -424,11 +531,13 @@ public class DataEntryActivity extends BaseActivity {
                         }
                     }
                     // Display the selected images
+
                     populateImagesWithPhotoPaths();
                 }
                 // If user captured image with camera
                 else if (requestCode == CAMERA_REQUEST) {
                     // Display the image captured (and don't clear the current photos)
+
                     populateImagesWithPhotoPaths();
                 }
             } catch (Exception ex) {
@@ -480,15 +589,15 @@ public class DataEntryActivity extends BaseActivity {
                             new File(img).delete();
                         }
                     }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                /**
-                 * User clicked cancel
-                 * @param dialog - alert dialog
-                 * @param id - button id
-                 */
-                public void onClick(final DialogInterface dialog, final int id) {
-                    dialog.cancel();
-                }
-            });
+                        /**
+                         * User clicked cancel
+                         * @param dialog - alert dialog
+                         * @param id - button id
+                         */
+                        public void onClick(final DialogInterface dialog, final int id) {
+                            dialog.cancel();
+                        }
+                    });
             AlertDialog alert = builder.create();
             image.setOnLongClickListener(new View.OnLongClickListener() {
                 /**
@@ -536,8 +645,51 @@ public class DataEntryActivity extends BaseActivity {
     }
 
     /**
-     * Set the UTM location
+     * Set up the select that contains all the context numbers the user can select
+     * for this find.
+     * @param contextOptions a list of strings of the context numbers available
      */
+
+    private void setUpContextNumberSelect(String[] contextOptions){
+
+
+        contextNumberDropdown = findViewById(R.id.data_entry_context_select_dropdown);
+
+
+        // Create an ArrayAdapter using the string array and a default spinner layout
+        ArrayAdapter<String> contextNumberAdapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item, contextOptions);
+        // Specify the layout to use when the list of choices appears
+        contextNumberAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // Apply the adapter to the spinner
+        String originalSelection = null;
+        if (contextNumberDropdown.getSelectedItem() != null){
+            originalSelection = contextNumberDropdown.getSelectedItem().toString();
+        }
+        contextNumberDropdown.setAdapter(contextNumberAdapter);
+
+        if (originalSelection != null){
+            // Search the dropdown for a matching context number, and set to that if found
+            for (int i = 0; i < contextNumberDropdown.getCount(); i++) {
+                if (contextNumberDropdown.getItemAtPosition(i).toString().equalsIgnoreCase(originalSelection)) {
+                    contextNumberDropdown.setSelection(i);
+                }
+            }
+        }
+        //We want the default to be the last non new element of the drop down .
+        else if (contextNumberDropdown.getCount() > 1){
+            contextNumberDropdown.setSelection(contextNumberDropdown.getCount()-2);
+        }
+
+
+
+
+    }
+
+    /**
+     * Set UTM location
+     */
+
     private void setUTMLocation() {
         if (latitude != null && longitude != null) {
             DatabaseHandler databaseHandler = new DatabaseHandler(this);
@@ -557,6 +709,25 @@ public class DataEntryActivity extends BaseActivity {
             eastingTextView.setText(String.valueOf(easting));
             sampleTextView.setText(String.valueOf(sample));
             timestamp = (new Date()).getTime();
+            //Here, call the request to get the context information for this locatiuon
+            prePopulateFields();
+            contextNumbersRequest(getContextURL(hemisphere, zone, easting,northing), getToken(context), requestQueue, response->{
+                String [] previousContexts = contextJSONArray2ContextStrArray(response);
+                int max = 0;
+                for (int i = 0; i < previousContexts.length; i++){
+                    int current_context_value = Integer.valueOf(previousContexts[i]);
+                    if (current_context_value > max){
+                        max = current_context_value;
+                    }
+                }
+                String [] extendedContextOptions =  Arrays.copyOf(previousContexts, previousContexts.length + 1);
+                extendedContextOptions[previousContexts.length] = (max + 1) +" : new";
+                setUpContextNumberSelect(extendedContextOptions);
+
+            }, error -> {
+
+            });
+
         }
     }
 
@@ -747,8 +918,10 @@ public class DataEntryActivity extends BaseActivity {
      */
     public void deleteButtonPressed(View v) {
         DatabaseHandler databaseHandler = new DatabaseHandler(this);
-        databaseHandler.setFindSynced(getElement());
+        databaseHandler.setFindDeleted(getElement()); //Used to be setFindSynched
+        //This isn't good. We shoujld not set it as synched as
         for (String path : photoPaths) {
+            //Here we may have to also delete the images from the database.
             new File(path).delete();
         }
         onBackPressed();
@@ -846,10 +1019,11 @@ public class DataEntryActivity extends BaseActivity {
         }
         // Get the material and the comment
         String material = materialsDropdown.getSelectedItem().toString();
+        String contextNumber = contextNumberDropdown.getSelectedItem().toString();
         String comment = commentsEditText.getText().toString();
         return new DataEntryElement(id, latitude, longitude, altitude, status, ARRatio, photoPaths,
-                material, comment, timestamp, timestamp, zone, hemisphere,
-                northing, preciseNorthing, easting, preciseEasting, sample, false);
+                material, contextNumber,comment, timestamp, timestamp, zone, hemisphere,
+                northing, preciseNorthing, easting, preciseEasting, sample, false , find_uuid, find_deleted);
     }
 
     /**
@@ -860,6 +1034,7 @@ public class DataEntryActivity extends BaseActivity {
         list[0] = getElement();
         // Save the dataEntryElement to DB
         DatabaseHandler databaseHandler = new DatabaseHandler(this);
+
         databaseHandler.addFindsRows(list);
     }
 

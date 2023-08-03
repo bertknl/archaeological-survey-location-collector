@@ -136,6 +136,7 @@ public class PathEntryActivity extends BaseActivity
      */
     private void initializeViews()
     {
+
         // Set the toolbar
         Toolbar toolbar = findViewById(R.id.toolbar_path_entry);
         setSupportActionBar(toolbar);
