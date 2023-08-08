@@ -41,6 +41,7 @@ import edu.upenn.sas.archaeologyapp.util.ExtraUtils.InjectableFunc;
 import edu.upenn.sas.archaeologyapp.util.ExtraUtils.ServerUUIDBucketIDPair;
 import edu.upenn.sas.archaeologyapp.util.ExtraUtils.ImagePathBucketIDPair;
 
+import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.tokenHaveAccess;
 import static edu.upenn.sas.archaeologyapp.util.StaticSingletons.getImagesToIgnore;
 import static edu.upenn.sas.archaeologyapp.util.StaticSingletons.getRequestQueueSingleton;
 import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.getToken;
@@ -142,21 +143,30 @@ public class SyncActivity extends AppCompatActivity
     }
 
     /**
-     * This uploads all finds and all images to the server
+     * This uploads all finds and all images to the server.
+     * It checks whether the token actually is valid first. If it is, the requests will be initiated. Otherwise, Nothing is being done.
      */
     private void uploadAllFindsAndAllImages(){
 
-        InjectableFunc uploadImages = ()->{ uploadImages(); } ;
-        AtomicInteger countDown = new AtomicInteger(totalItems);
+        InjectableFunc handleTokenWithSuccess = () -> {
+            InjectableFunc uploadImages = ()->{ uploadImages(); } ;
+            AtomicInteger countDown = new AtomicInteger(totalItems);
 
-        //Insert all new finds, each new find check if the countDown reaches 0. If it is 0, upload all the images.
-        for(int i = uploadIndex; i < totalItems; i++) {
-            uploadFind(i, countDown, uploadImages);
-        }
-        //if we have no new finds to upload, let's just upload images.
-        if (totalItems == 0){
-            uploadImages();
-        }
+            //Insert all new finds, each new find check if the countDown reaches 0. If it is 0, upload all the images.
+            for(int i = uploadIndex; i < totalItems; i++) {
+                uploadFind(i, countDown, uploadImages);
+            }
+            //if we have no new finds to upload, let's just upload images.
+            if (totalItems == 0){
+                uploadImages();
+            }
+
+        };
+        InjectableFunc handleTokenWithoutSuccess = () -> {
+            Toast.makeText(getApplicationContext(), "Token is not valid or the server is down: ", Toast.LENGTH_SHORT).show();
+        };
+        tokenHaveAccess(getToken(context), handleTokenWithSuccess, handleTokenWithoutSuccess, queue);
+
     }
     /**
      * This uploads all finds into the server, notice we also inject uploadImages to it so it will upload all the images when the finds are uploaded.

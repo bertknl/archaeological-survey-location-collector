@@ -3,6 +3,7 @@ package edu.upenn.sas.archaeologyapp.services;
 import static edu.upenn.sas.archaeologyapp.util.Constants.LOGIN_SERVER_URL;
 import static edu.upenn.sas.archaeologyapp.util.Constants.TOKEN_ACCESS_TESTING_URL;
 
+
 import android.content.SharedPreferences;
 import android.content.Context;
 import android.widget.Toast;
@@ -20,6 +21,7 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import edu.upenn.sas.archaeologyapp.util.ExtraUtils.InjectableFunc;
 
@@ -152,13 +154,35 @@ public class UserAuthentication {
     }
 
     /**
-     * This method tests the validity of the token by sending a simple request that needs a proper token.
+     * This is a simplified testing of the validity of the token
+     * On the field, we can't always check if the login is valid by connecting to the internet. In case the internet is down, we
+     * simply assume a token not null and not disabled_string is one that is valid because it has been set before and not been logged out yet.
      *
      * @param token                  The string token that we want to check if it can be used to access the api
      * @param handleTokenWithSuccess The method to call when the token is valid
      * @param handleTokenWithoutSuccess The method to call when the token is invalid
-     * @param queue                  The request queue to which the created requests is added
+
      */
+
+    static public void simpleTokenHaveAccess(String token, InjectableFunc handleTokenWithSuccess, InjectableFunc handleTokenWithoutSuccess) {
+
+        if (token != null && !token.equals("") && !token.equals("disabled_string")){
+
+            handleTokenWithSuccess.apply();
+        }else{
+            handleTokenWithoutSuccess.apply();
+        }
+    }
+
+
+        /**
+         * This method tests the validity of the token by sending a simple request that needs a proper token.
+         *
+         * @param token                  The string token that we want to check if it can be used to access the api
+         * @param handleTokenWithSuccess The method to call when the token is valid
+         * @param handleTokenWithoutSuccess The method to call when the token is invalid
+         * @param queue                  The request queue to which the created requests is added
+         */
     static public void tokenHaveAccess(String token, InjectableFunc handleTokenWithSuccess, InjectableFunc handleTokenWithoutSuccess, RequestQueue queue) {
 
         Request jsonArrayRequest = new JsonArrayRequest(TOKEN_ACCESS_TESTING_URL,

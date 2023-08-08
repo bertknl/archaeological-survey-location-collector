@@ -7,6 +7,7 @@ import edu.upenn.sas.archaeologyapp.R;
 import edu.upenn.sas.archaeologyapp.util.Constants;
 import edu.upenn.sas.archaeologyapp.util.ExtraUtils.InjectableFunc;
 
+import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.simpleTokenHaveAccess;
 import static edu.upenn.sas.archaeologyapp.util.StaticSingletons.getRequestQueueSingleton;
 import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.getToken;
 import static edu.upenn.sas.archaeologyapp.services.UserAuthentication.tokenHaveAccess;
@@ -53,7 +54,12 @@ public class SplashActivity extends BaseActivity
             public void run()
             {
                 String token =  (getToken(context));
-                tokenHaveAccess(token, handleTokenWithSuccess, handleTokenWithoutSuccess, queue );
+                //Here let's print what the token look like in all 3 circumstances
+//                1. Not logged:  in null
+//                2. Logged in: the full uuid-token
+//                3. Logged out button pressed: disabled_string.
+
+                simpleTokenHaveAccess(token, handleTokenWithSuccess, handleTokenWithoutSuccess );
             }
         }, Constants.SPLASH_TIME_OUT);
     }
