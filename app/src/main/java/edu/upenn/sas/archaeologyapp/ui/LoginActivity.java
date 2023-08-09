@@ -11,6 +11,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
+import com.google.android.material.textfield.TextInputEditText;
 
 import edu.upenn.sas.archaeologyapp.R;
 
@@ -43,7 +44,8 @@ public class LoginActivity extends BaseActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         findViewById(R.id.loginButton).setOnClickListener(view -> {
-            EditText userName = (findViewById(R.id.userName));
+            TextInputEditText userName = (findViewById(R.id.userName));
+
             EditText userPassword = (findViewById(R.id.userPassword));
             String userNameStr = (userName.getText().toString());
             String userPasswordStr =   (userPassword.getText().toString());
