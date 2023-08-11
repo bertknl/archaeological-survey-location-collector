@@ -198,10 +198,10 @@ public class DataEntryActivity extends BaseActivity {
         // Set the toolbar
 
 
-        Toolbar toolbar = findViewById(R.id.toolbar_data_entry);
-        setSupportActionBar(toolbar);
+//        Toolbar toolbar = findViewById(R.id.toolbar_data_entry);
+//        setSupportActionBar(toolbar);
         // Configure up button to go back to previous activity
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+//        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         // Get references to the latitude, longitude, altitude, and status text views
         latitudeTextView = findViewById(R.id.data_entry_lat_text);
         longitudeTextView = findViewById(R.id.data_entry_lng_text);

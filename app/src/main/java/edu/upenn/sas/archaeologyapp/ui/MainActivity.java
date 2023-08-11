@@ -171,8 +171,8 @@ public class MainActivity extends BaseActivity implements SwipeRefreshLayout.OnR
     private void initializeViews()
     {
         // Set the toolbar
-        Toolbar toolbar = findViewById(R.id.toolbar_main);
-        setSupportActionBar(toolbar);
+//        Toolbar toolbar = findViewById(R.id.toolbar_main);
+//        setSupportActionBar(toolbar);
         // Set the bottom bar
         displayModeBar = findViewById(R.id.displayModeBar);
         displayModeBar.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {

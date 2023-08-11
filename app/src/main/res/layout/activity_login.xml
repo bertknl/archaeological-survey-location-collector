@@ -29,7 +29,7 @@
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="288dp"
         android:layout_height="60dp"
-        android:layout_marginTop="384dp"
+        android:layout_marginTop="330dp"
         android:ems="10"
         android:hint="username"
         android:inputType="text"
@@ -41,10 +41,9 @@
         >
 
         <com.google.android.material.textfield.TextInputEditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
             android:id="@+id/userName"
-              />
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -55,10 +54,8 @@
         android:layout_width="288dp"
         android:layout_height="60dp"
         android:ems="10"
-        android:hint="Password"
-        android:inputType="textPassword"
+        android:hint="password"
         android:textSize="14sp"
-
         app:layout_constraintBottom_toTopOf="@+id/loginButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.504"
@@ -68,23 +65,47 @@
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/userPassword"
+            android:inputType="textPassword"
+
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
     </com.google.android.material.textfield.TextInputLayout>
 
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/aaaaaa"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        android:layout_width="288dp"
+        android:layout_height="60dp"
+        android:inputType="none"
+        android:hint="server"
+        app:layout_constraintBottom_toTopOf="@+id/loginButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/userPasswordLayout">
+
+        <AutoCompleteTextView
+            android:id="@+id/bbbbbb"
+            android:inputType="none"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:editable="false"
+            tools:ignore="Deprecated" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+
     <TextView
         android:id="@+id/textView2"
         style="@style/Widget.MaterialComponents.TextView"
-        android:layout_width="265dp"
-        android:layout_height="0dp"
+        android:layout_width="284dp"
+        android:layout_height="185dp"
         android:layout_marginTop="140dp"
-        android:fontFamily="@font/inter"
+        android:fontFamily="@font/inter_bold"
         android:text="Archaeological Survey Location Collector"
         android:textAlignment="center"
         android:textColor="@color/newColorPrimary"
         android:textSize="36sp"
-
-        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"

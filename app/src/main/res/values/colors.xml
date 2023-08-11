@@ -21,6 +21,7 @@
     <color name="newColorPrimaryDark">#303F9F</color>
     <color name="newColorAccent">#FF4081</color>
     <color name="newColorTintedBackground">#EEEEEE</color>
+    <color name="newGenericWhiteBackground">#FFFFFF</color>
 
     <!-- SPLASH ACTIVITY -->
     <color name="newSplashTextBackground">#000000</color>
