@@ -4,6 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+
+
     android:padding="10dp" >
     <LinearLayout
         android:layout_margin="16dp"
@@ -79,7 +81,7 @@
             </LinearLayout>
         <fragment
             android:name="com.google.android.gms.maps.MapFragment"
-            android:id="@+id/map"
+            android:id="@+id/map_named_was_map_but_changed_for_refactoring_original_was_map"
             android:layout_width="match_parent"
             android:layout_height="204dp" />
         <ListView
